@@ -6,266 +6,43 @@
 <meta name="color-scheme" content="light">
 <title>La población más vulnerable, entre la vulnerable</title>
 <style>
-:root{
-  --blue:#07547f;
-  --blue2:#006fb4;
-  --cyan:#08add8;
-  --light:#d9f1f8;
-  --ink:#101820;
-  --muted:#53606a;
-  --line:#d9e4e9;
-}
-*{box-sizing:border-box}
-html,body{margin:0;background:#fff;color:var(--ink);font-family:Arial,Helvetica,sans-serif}
-button{font:inherit}
-.wrap{width:100%;max-width:none;margin:0;padding:24px clamp(18px,2.4vw,42px) 30px}
-.header{display:flex;justify-content:space-between;align-items:flex-end;gap:28px;margin-bottom:24px}
-.kicker{margin:0 0 8px;font-size:1rem}
-h1{margin:0;max-width:720px;font-size:clamp(2rem,3.6vw,3.6rem);line-height:1;letter-spacing:-.035em}
-.filters{display:flex;flex-wrap:wrap;gap:8px;justify-content:flex-end;max-width:520px}
-.filter{border:1px solid var(--line);background:#fff;color:var(--blue);font-weight:700;border-radius:999px;padding:9px 13px;cursor:pointer}
-.filter.active{background:var(--blue);color:#fff;border-color:var(--blue)}
-.filter:focus-visible,.metric:focus-visible,.wide:focus-visible,.side:focus-visible{outline:3px solid rgba(8,173,216,.27);outline-offset:2px}
-
-.layout{display:grid;grid-template-columns:1.14fr 1.32fr .92fr;gap:clamp(18px,1.8vw,30px);align-items:start;width:100%}
-.left{padding:10px 0 0;min-width:0}
-.survey-title{margin:0 0 22px;color:var(--blue2);text-align:center;font-size:clamp(1.1rem,1.55vw,1.5rem);line-height:1.2;font-weight:800}
-.survey-list{display:grid;gap:13px}
-.survey-row{display:grid;grid-template-columns:36px 90px minmax(0,1fr);column-gap:14px;align-items:center;min-width:0}
-.survey-row svg{width:32px;height:32px;stroke:var(--cyan);stroke-width:2;fill:none}
-.survey-row strong{display:block;width:90px;white-space:nowrap;font-size:clamp(1.95rem,2.35vw,2.5rem);line-height:.94;letter-spacing:-.03em;font-weight:900}
-.survey-row .label{min-width:0;font-size:clamp(1rem,1.2vw,1.16rem);line-height:1.14}
-.narratives{display:grid;gap:22px;margin-top:42px}
-.narrative{font-size:clamp(1.05rem,1.35vw,1.3rem);line-height:1.18}
-.narrative strong{font-weight:900}
-
-.center{display:grid;gap:14px;min-width:0}
-.metric-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
-.metric,.wide,.side{border:1px solid transparent;background:#fff;color:inherit;text-align:left;cursor:pointer;border-radius:16px;transition:.18s ease}
-.metric{padding:14px}
-.metric:hover,.wide:hover,.side:hover{border-color:#b9dbe7;transform:translateY(-1px)}
-.metric.selected,.wide.selected,.side.selected{border-color:var(--cyan);background:#f5fcfe}
-.dimmed{opacity:.18}
-.metric-head{display:flex;align-items:center;gap:10px;margin-bottom:5px}
-.badge{width:38px;height:38px;display:grid;place-items:center;flex:0 0 auto;border-radius:50%;background:var(--blue);color:#fff}
-.badge svg{width:23px;height:23px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
-.num{font-size:clamp(2rem,2.8vw,3rem);font-weight:900;line-height:.92;color:#083f68;letter-spacing:-.035em}
-.metric b,.wide b,.side b{display:block;color:#083f68;font-size:1rem;line-height:1.1;margin:3px 0 5px}
-.metric p,.wide p,.side p{margin:0;font-size:.92rem;line-height:1.2}
-
-.wide{display:grid;grid-template-columns:minmax(190px,42%) 1fr;gap:18px;align-items:center;padding:12px 14px}
-.pictos{display:grid;grid-template-columns:repeat(5,1fr);gap:6px}
-.picto{height:39px;color:#a8afb3;display:grid;place-items:center}
-.picto.on{color:var(--cyan)}
-.picto svg{width:100%;height:100%;fill:currentColor;stroke:currentColor;stroke-width:1.2}
-.wide-copy .num{font-size:clamp(2.1rem,3vw,3.3rem)}
-
-.right{display:grid;gap:16px;min-width:0}
-.side{padding:18px}
-.poverty{background:var(--light)}
-.people{display:grid;grid-template-columns:repeat(5,1fr);gap:7px;max-width:280px;margin:0 auto 18px}
-.person{height:50px;color:#646b70;display:grid;place-items:center}
-.person.on{color:var(--cyan)}
-.person svg{width:100%;height:100%;fill:currentColor}
-.poverty .num{font-size:clamp(3rem,4.2vw,4.4rem)}
-.world,.odsbox{background:#cbeef7;display:grid;grid-template-columns:92px 1fr;align-items:center;gap:14px}
-.globe{width:82px;height:82px;border-radius:50%;background:var(--cyan);position:relative;overflow:hidden}
-.globe:before,.globe:after{content:"";position:absolute;background:#9ccf68;border-radius:50%}
-.globe:before{width:38px;height:23px;left:10px;top:15px;transform:rotate(18deg)}
-.globe:after{width:32px;height:32px;right:8px;bottom:12px;transform:rotate(-18deg)}
-.rank{font-size:clamp(2.4rem,3.3vw,3.6rem);font-weight:900;color:#083f68;line-height:.9}
-.ods{width:82px;height:82px;border-radius:50%;background:conic-gradient(#e5243b 0 21deg,#dda63a 21deg 42deg,#4c9f38 42deg 63deg,#c5192d 63deg 84deg,#ff3a21 84deg 105deg,#26bde2 105deg 126deg,#fcc30b 126deg 147deg,#a21942 147deg 168deg,#fd6925 168deg 189deg,#dd1367 189deg 210deg,#fd9d24 210deg 231deg,#bf8b2e 231deg 252deg,#3f7e44 252deg 273deg,#0a97d9 273deg 294deg,#56c02b 294deg 315deg,#00689d 315deg 336deg,#19486a 336deg);position:relative}
-.ods:after{content:"ODS";position:absolute;inset:14px;border-radius:50%;background:#fff;display:grid;place-items:center;color:#555;font-weight:900}
-.ods-big{font-size:clamp(1.9rem,2.7vw,2.8rem);font-weight:900;color:#083f68;line-height:1}
-
-.detail{margin-top:22px;padding-top:16px;border-top:1px solid var(--line);display:grid;grid-template-columns:180px 1fr;gap:18px;min-height:80px}
-.detail small{display:block;text-transform:uppercase;letter-spacing:.11em;color:var(--blue);font-weight:900}
-.detail-title{margin-top:4px;color:#083f68;font-weight:900}
-.detail p{margin:0;color:#394851;line-height:1.35}
-.hint{margin-top:6px;color:#6b757c;font-size:.8rem}
-
-@media(min-width:1500px){
-  .wrap{padding-left:54px;padding-right:54px}
-  .layout{grid-template-columns:1.12fr 1.36fr .94fr;gap:32px}
-  .metric,.wide,.side{border-radius:18px}
-}
-@media(max-width:1080px){
-  .header{align-items:flex-start;flex-direction:column}
-  .filters{justify-content:flex-start;max-width:none}
-  .layout{grid-template-columns:1fr 1fr;grid-template-areas:"left center" "right right"}
-  .left{grid-area:left}.center{grid-area:center}.right{grid-area:right;grid-template-columns:repeat(3,1fr)}
-  .world,.odsbox{grid-template-columns:1fr;text-align:center}.globe,.ods{margin:auto}
-  .wide{grid-template-columns:170px 1fr}
-  .survey-row{grid-template-columns:36px 82px minmax(0,1fr);column-gap:12px}
-  .survey-row strong{width:82px;font-size:2.05rem}
-}
-@media(max-width:760px){
-  .wrap{padding:20px 14px 28px}
-  .layout{display:block}
-  .center{margin-top:30px}
-  .right{display:grid;grid-template-columns:1fr;margin-top:24px}
-  .metric-grid{grid-template-columns:1fr}
-  .wide{grid-template-columns:145px 1fr}
-  .survey-title{text-align:left;margin-left:48px}
-  .survey-row{grid-template-columns:32px 72px minmax(0,1fr);column-gap:12px}
-  .survey-row svg{width:29px;height:29px}
-  .survey-row strong{width:72px;font-size:1.82rem}
-  .survey-row .label{font-size:1rem;line-height:1.12}
-  .narratives{margin-top:34px;gap:20px}
-  .detail{grid-template-columns:1fr}
-  .filters{flex-wrap:nowrap;overflow-x:auto;padding-bottom:4px;max-width:100%}
-  .filter{white-space:nowrap}
-}
-@media(max-width:430px){
-  .survey-title{margin-left:0;text-align:center;font-size:1.12rem}
-  .survey-list{gap:15px}
-  .survey-row{grid-template-columns:28px 64px minmax(0,1fr);column-gap:10px;align-items:start}
-  .survey-row svg{width:25px;height:25px;margin-top:3px}
-  .survey-row strong{width:64px;font-size:1.62rem;line-height:1}
-  .survey-row .label{font-size:.94rem;line-height:1.12}
-  .wide{grid-template-columns:1fr}
-  .pictos{max-width:220px}
-  .world,.odsbox{grid-template-columns:78px 1fr;text-align:left}
-  .globe,.ods{width:72px;height:72px;margin:0}
-}
+:root{--blue:#07547f;--blue2:#006fb4;--cyan:#08add8;--light:#d9f1f8;--ink:#101820;--line:#d9e4e9}
+*{box-sizing:border-box}html,body{margin:0;background:#fff;color:var(--ink);font-family:Arial,Helvetica,sans-serif}button{font:inherit}
+.wrap{width:100%;max-width:none;margin:0;padding:24px clamp(18px,2.4vw,42px) 18px}
+.header{display:flex;justify-content:space-between;align-items:flex-end;gap:28px;margin-bottom:24px}.kicker{margin:0 0 8px;font-size:1rem}h1{margin:0;max-width:720px;font-size:clamp(2rem,3.6vw,3.6rem);line-height:1;letter-spacing:-.035em}
+.filters{display:flex;flex-wrap:wrap;gap:8px;justify-content:flex-end;max-width:520px}.filter{border:1px solid var(--line);background:#fff;color:var(--blue);font-weight:700;border-radius:999px;padding:9px 13px;cursor:pointer}.filter.active{background:var(--blue);color:#fff;border-color:var(--blue)}.filter:focus-visible,.metric:focus-visible,.wide:focus-visible,.side:focus-visible{outline:3px solid rgba(8,173,216,.27);outline-offset:2px}
+.layout{display:grid;grid-template-columns:1.14fr 1.32fr .92fr;gap:clamp(18px,1.8vw,30px);align-items:start;width:100%}.left{padding:10px 0 0;min-width:0}.survey-title{margin:0 0 22px;color:var(--blue2);text-align:center;font-size:clamp(1.1rem,1.55vw,1.5rem);line-height:1.2;font-weight:800}.survey-list{display:grid;gap:13px}.survey-row{display:grid;grid-template-columns:36px 90px minmax(0,1fr);column-gap:14px;align-items:center;min-width:0}.survey-row svg{width:32px;height:32px;stroke:var(--cyan);stroke-width:2;fill:none}.survey-row strong{display:block;width:90px;white-space:nowrap;font-size:clamp(1.95rem,2.35vw,2.5rem);line-height:.94;letter-spacing:-.03em;font-weight:900}.survey-row .label{min-width:0;font-size:clamp(1rem,1.2vw,1.16rem);line-height:1.14}.narratives{display:grid;gap:22px;margin-top:42px}.narrative{font-size:clamp(1.05rem,1.35vw,1.3rem);line-height:1.18}.narrative strong{font-weight:900}
+.center{display:grid;gap:14px;min-width:0}.metric-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}.metric,.wide,.side{border:1px solid transparent;background:#fff;color:inherit;text-align:left;cursor:pointer;border-radius:16px;transition:.18s ease}.metric{padding:14px}.metric:hover,.wide:hover,.side:hover{border-color:#b9dbe7;transform:translateY(-1px)}.metric.selected,.wide.selected,.side.selected{border-color:var(--cyan);background:#f5fcfe}.dimmed{opacity:.18}.metric-head{display:flex;align-items:center;gap:10px;margin-bottom:5px}.badge{width:38px;height:38px;display:grid;place-items:center;flex:0 0 auto;border-radius:50%;background:var(--blue);color:#fff}.badge svg{width:23px;height:23px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}.num{font-size:clamp(2rem,2.8vw,3rem);font-weight:900;line-height:.92;color:#083f68;letter-spacing:-.035em}.metric b,.wide b,.side b{display:block;color:#083f68;font-size:1rem;line-height:1.1;margin:3px 0 5px}.metric p,.wide p,.side p{margin:0;font-size:.92rem;line-height:1.2}
+.wide{display:grid;grid-template-columns:minmax(190px,42%) 1fr;gap:18px;align-items:center;padding:12px 14px}.pictos{display:grid;grid-template-columns:repeat(5,1fr);gap:6px}.picto{height:39px;color:#a8afb3;display:grid;place-items:center}.picto.on{color:var(--cyan)}.picto svg{width:100%;height:100%;fill:currentColor;stroke:currentColor;stroke-width:1.2}.wide-copy .num{font-size:clamp(2.1rem,3vw,3.3rem)}
+.right{display:grid;gap:16px;min-width:0}.side{padding:18px}.poverty{background:var(--light)}.people{display:grid;grid-template-columns:repeat(5,1fr);gap:7px;max-width:280px;margin:0 auto 18px}.person{height:50px;color:#646b70;display:grid;place-items:center}.person.on{color:var(--cyan)}.person svg{width:100%;height:100%;fill:currentColor}.poverty .num{font-size:clamp(3rem,4.2vw,4.4rem)}.world,.odsbox{background:#cbeef7;display:grid;grid-template-columns:92px 1fr;align-items:center;gap:14px}.globe{width:82px;height:82px;border-radius:50%;background:var(--cyan);position:relative;overflow:hidden}.globe:before,.globe:after{content:"";position:absolute;background:#9ccf68;border-radius:50%}.globe:before{width:38px;height:23px;left:10px;top:15px;transform:rotate(18deg)}.globe:after{width:32px;height:32px;right:8px;bottom:12px;transform:rotate(-18deg)}.rank{font-size:clamp(2.4rem,3.3vw,3.6rem);font-weight:900;color:#083f68;line-height:.9}.ods{width:82px;height:82px;border-radius:50%;background:conic-gradient(#e5243b 0 21deg,#dda63a 21deg 42deg,#4c9f38 42deg 63deg,#c5192d 63deg 84deg,#ff3a21 84deg 105deg,#26bde2 105deg 126deg,#fcc30b 126deg 147deg,#a21942 147deg 168deg,#fd6925 168deg 189deg,#dd1367 189deg 210deg,#fd9d24 210deg 231deg,#bf8b2e 231deg 252deg,#3f7e44 252deg 273deg,#0a97d9 273deg 294deg,#56c02b 294deg 315deg,#00689d 315deg 336deg,#19486a 336deg 360deg);position:relative}.ods:after{content:"ODS";position:absolute;inset:14px;border-radius:50%;background:#fff;display:grid;place-items:center;color:#555;font-weight:900}.ods-big{font-size:clamp(1.9rem,2.7vw,2.8rem);font-weight:900;color:#083f68;line-height:1}
+@media(min-width:1500px){.wrap{padding-left:54px;padding-right:54px}.layout{grid-template-columns:1.12fr 1.36fr .94fr;gap:32px}.metric,.wide,.side{border-radius:18px}}
+@media(max-width:1080px){.header{align-items:flex-start;flex-direction:column}.filters{justify-content:flex-start;max-width:none}.layout{grid-template-columns:1fr 1fr;grid-template-areas:"left center" "right right"}.left{grid-area:left}.center{grid-area:center}.right{grid-area:right;grid-template-columns:repeat(3,1fr)}.world,.odsbox{grid-template-columns:1fr;text-align:center}.globe,.ods{margin:auto}.wide{grid-template-columns:170px 1fr}.survey-row{grid-template-columns:36px 82px minmax(0,1fr);column-gap:12px}.survey-row strong{width:82px;font-size:2.05rem}}
+@media(max-width:760px){.wrap{padding:20px 14px 18px}.layout{display:block}.center{margin-top:30px}.right{display:grid;grid-template-columns:1fr;margin-top:24px}.metric-grid{grid-template-columns:1fr}.wide{grid-template-columns:145px 1fr}.survey-title{text-align:left;margin-left:48px}.survey-row{grid-template-columns:32px 72px minmax(0,1fr);column-gap:12px}.survey-row svg{width:29px;height:29px}.survey-row strong{width:72px;font-size:1.82rem}.survey-row .label{font-size:1rem;line-height:1.12}.narratives{margin-top:34px;gap:20px}.filters{flex-wrap:nowrap;overflow-x:auto;padding-bottom:4px;max-width:100%}.filter{white-space:nowrap}}
+@media(max-width:430px){.survey-title{margin-left:0;text-align:center;font-size:1.12rem}.survey-list{gap:15px}.survey-row{grid-template-columns:28px 64px minmax(0,1fr);column-gap:10px;align-items:start}.survey-row svg{width:25px;height:25px;margin-top:3px}.survey-row strong{width:64px;font-size:1.62rem;line-height:1}.survey-row .label{font-size:.94rem;line-height:1.12}.wide{grid-template-columns:1fr}.pictos{max-width:220px}.world,.odsbox{grid-template-columns:78px 1fr;text-align:left}.globe,.ods{width:72px;height:72px;margin:0}}
 @media(prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
 </head>
 <body>
 <main class="wrap">
-  <header class="header">
-    <div>
-      <p class="kicker">Situación de la población desplazada internamente en Colombia</p>
-      <h1>La población más vulnerable, entre la vulnerable</h1>
-    </div>
-    <nav class="filters" aria-label="Filtrar indicadores">
-      <button class="filter active" type="button" data-filter="all">Todos</button>
-      <button class="filter" type="button" data-filter="vivienda">Vivienda</button>
-      <button class="filter" type="button" data-filter="pobreza">Pobreza e ingresos</button>
-      <button class="filter" type="button" data-filter="genero">Género</button>
-      <button class="filter" type="button" data-filter="etnico">Étnico</button>
-      <button class="filter" type="button" data-filter="desplazamiento">Desplazamiento</button>
-    </nav>
-  </header>
-
-  <section class="layout">
-    <section class="left">
-      <h2 class="survey-title">IV Encuesta Nacional de Goce<br>Efectivo de Derechos</h2>
-      <div class="survey-list">
-        <div class="survey-row topic" data-topic="desplazamiento pobreza">
-          <svg viewBox="0 0 48 48" aria-hidden="true"><path d="M5 39h38M13 39V26h9v13M28 39V15h10v24M31 20h3M31 25h3M31 30h3M31 35h3"/><path d="M7 14h11M14 9l5 5-5 5"/></svg>
-          <strong>75%</strong><span class="label">vive en las zonas de recepción urbanas</span>
-        </div>
-        <div class="survey-row topic" data-topic="vivienda">
-          <svg viewBox="0 0 48 48" aria-hidden="true"><path d="M7 22 24 8l17 14v18H29V29H19v11H7z"/><circle cx="9" cy="9" r="5"/><path d="m6 6 6 6m0-6-6 6"/></svg>
-          <strong>86%</strong><span class="label">no tiene acceso a vivienda adecuada</span>
-        </div>
-        <div class="survey-row topic" data-topic="pobreza">
-          <svg viewBox="0 0 48 48" aria-hidden="true"><circle cx="24" cy="10" r="5"/><path d="M24 16v14M16 22l8-6 8 6M20 30l-4 11M28 30l4 11"/></svg>
-          <strong>40%</strong><span class="label">vive en extrema pobreza</span>
-        </div>
-      </div>
-      <div class="narratives">
-        <div class="narrative topic" data-topic="etnico"><strong>44%</strong> jefes de hogar de pueblos indígenas</div>
-        <div class="narrative topic" data-topic="pobreza"><strong>8 de cada 10</strong> en informalidad laboral</div>
-        <div class="narrative topic" data-topic="etnico"><strong>48%</strong> tiene jefes de hogar a personas afrocolombianas</div>
-      </div>
-    </section>
-
-    <section class="center">
-      <div class="metric-grid">
-        <button class="metric selected topic" type="button" data-topic="desplazamiento" data-title="9,1 millones de personas" data-detail="Personas registradas como desplazadas internas. La cifra evidencia la magnitud acumulada del desplazamiento y la presión sostenida sobre los sistemas de atención y reparación.">
-          <div class="metric-head"><span class="badge"><svg viewBox="0 0 24 24"><circle cx="8" cy="5" r="2"/><path d="M7 8l-2 5 3 2 1 5M8 10l5 2 2-3M14 15h7m-3-3 3 3-3 3"/></svg></span><span class="num">9.1</span></div>
-          <b>millones de personas*</b><p>registradas como desplazadas internas, de las cuales 7.1 millones requieren atención o reparación.</p>
-        </button>
-        <button class="metric topic" type="button" data-topic="genero" data-title="65% de los hogares desplazados" data-detail="Una mayoría de los hogares desplazados está liderada por mujeres, mostrando una dimensión de género importante en la estructura y las responsabilidades de los hogares.">
-          <div class="metric-head"><span class="badge"><svg viewBox="0 0 24 24"><circle cx="12" cy="5" r="2"/><path d="M12 8v6M8 12h8M9 20l3-6 3 6M12 14v6"/></svg></span><span class="num">65%</span></div>
-          <b>de los hogares desplazados*</b><p>son liderados por mujeres.</p>
-        </button>
-        <button class="metric topic" type="button" data-topic="desplazamiento" data-title="1,7 millones de personas" data-detail="Personas desplazadas internamente después del Acuerdo de Paz de 2016, lo que evidencia la continuidad del fenómeno en el periodo posterior al acuerdo.">
-          <div class="metric-head"><span class="badge"><svg viewBox="0 0 24 24"><circle cx="8" cy="5" r="2"/><path d="M7 8l-2 5 3 2 1 5M8 10l5 2 2-3M14 15h7m-3-3 3 3-3 3"/></svg></span><span class="num">1.7</span></div>
-          <b>millones de personas*</b><p>desplazadas internas después del Acuerdo de Paz (2016).</p>
-        </button>
-        <button class="metric topic" type="button" data-topic="etnico desplazamiento" data-title="80% en territorios étnicos" data-detail="Una proporción muy alta de los desplazamientos forzados entre 2022 y 2024 ocurrió en territorios étnicos, evidenciando una afectación territorial desigual.">
-          <div class="metric-head"><span class="badge"><svg viewBox="0 0 24 24"><path d="M3 11 12 4l9 7v9H3zM7 20v-5h3v5m4 0v-5h3v5"/></svg></span><span class="num">80%</span></div>
-          <b>de los desplazamientos forzados*</b><p>ocurrieron en territorios étnicos, entre 2022 y 2024.</p>
-        </button>
-      </div>
-
-      <button class="wide topic" type="button" data-topic="vivienda" data-title="86% sin vivienda adecuada" data-detail="La vivienda aparece como una de las privaciones más extendidas. El indicador coincide con el 86% reportado en la IV Encuesta Nacional de Goce Efectivo de Derechos.">
-        <div class="pictos" aria-hidden="true">
-          <span class="picto"><svg viewBox="0 0 50 45"><path d="M5 21 25 5l20 16v20H31V29H19v12H5z"/></svg></span><span class="picto"><svg viewBox="0 0 50 45"><path d="M5 21 25 5l20 16v20H31V29H19v12H5z"/></svg></span><span class="picto"><svg viewBox="0 0 50 45"><path d="M5 21 25 5l20 16v20H31V29H19v12H5z"/></svg></span><span class="picto"><svg viewBox="0 0 50 45"><path d="M5 21 25 5l20 16v20H31V29H19v12H5z"/></svg></span><span class="picto"><svg viewBox="0 0 50 45"><path d="M5 21 25 5l20 16v20H31V29H19v12H5z"/></svg></span>
-          <span class="picto"><svg viewBox="0 0 50 45"><path d="M5 21 25 5l20 16v20H31V29H19v12H5z"/></svg></span><span class="picto"><svg viewBox="0 0 50 45"><path d="M5 21 25 5l20 16v20H31V29H19v12H5z"/></svg></span><span class="picto"><svg viewBox="0 0 50 45"><path d="M5 21 25 5l20 16v20H31V29H19v12H5z"/></svg></span><span class="picto on"><svg viewBox="0 0 50 45"><path d="M5 21 25 5l20 16v20H31V29H19v12H5z"/></svg></span><span class="picto on"><svg viewBox="0 0 50 45"><path d="M5 21 25 5l20 16v20H31V29H19v12H5z"/></svg></span>
-        </div>
-        <div class="wide-copy"><span class="num">86%</span><b>no cuentan con una vivienda adecuada***</b></div>
-      </button>
-
-      <button class="wide topic" type="button" data-topic="pobreza" data-title="82% trabaja en informalidad" data-detail="La informalidad laboral limita la estabilidad del ingreso y la protección social. En la infografía original aparece también como 8 de cada 10 personas en informalidad laboral.">
-        <div class="pictos" aria-hidden="true">
-          <span class="picto"><svg viewBox="0 0 50 45"><circle cx="25" cy="13" r="7"/><path d="M11 39c1-12 7-18 14-18s13 6 14 18H11z"/></svg></span><span class="picto"><svg viewBox="0 0 50 45"><circle cx="25" cy="13" r="7"/><path d="M11 39c1-12 7-18 14-18s13 6 14 18H11z"/></svg></span><span class="picto"><svg viewBox="0 0 50 45"><circle cx="25" cy="13" r="7"/><path d="M11 39c1-12 7-18 14-18s13 6 14 18H11z"/></svg></span><span class="picto"><svg viewBox="0 0 50 45"><circle cx="25" cy="13" r="7"/><path d="M11 39c1-12 7-18 14-18s13 6 14 18H11z"/></svg></span><span class="picto on"><svg viewBox="0 0 50 45"><circle cx="25" cy="13" r="7"/><path d="M11 39c1-12 7-18 14-18s13 6 14 18H11z"/></svg></span>
-          <span class="picto"><svg viewBox="0 0 50 45"><circle cx="25" cy="13" r="7"/><path d="M11 39c1-12 7-18 14-18s13 6 14 18H11z"/></svg></span><span class="picto"><svg viewBox="0 0 50 45"><circle cx="25" cy="13" r="7"/><path d="M11 39c1-12 7-18 14-18s13 6 14 18H11z"/></svg></span><span class="picto"><svg viewBox="0 0 50 45"><circle cx="25" cy="13" r="7"/><path d="M11 39c1-12 7-18 14-18s13 6 14 18H11z"/></svg></span><span class="picto"><svg viewBox="0 0 50 45"><circle cx="25" cy="13" r="7"/><path d="M11 39c1-12 7-18 14-18s13 6 14 18H11z"/></svg></span><span class="picto on"><svg viewBox="0 0 50 45"><circle cx="25" cy="13" r="7"/><path d="M11 39c1-12 7-18 14-18s13 6 14 18H11z"/></svg></span>
-        </div>
-        <div class="wide-copy"><span class="num">82%</span><b>trabaja en condiciones de informalidad**</b></div>
-      </button>
-
-      <button class="wide topic" type="button" data-topic="pobreza" data-title="55% con inseguridad alimentaria" data-detail="Más de la mitad de los hogares desplazados aparece expuesta a inseguridad alimentaria, conectando desplazamiento, pobreza y acceso insuficiente a alimentos.">
-        <div class="pictos" aria-hidden="true">
-          <span class="picto"><svg viewBox="0 0 50 45"><path d="M8 26h34c0 8-6 13-17 13S8 34 8 26zM13 22l7-5m1 5 7-7m1 7 7-5"/></svg></span><span class="picto"><svg viewBox="0 0 50 45"><path d="M8 26h34c0 8-6 13-17 13S8 34 8 26zM13 22l7-5m1 5 7-7m1 7 7-5"/></svg></span><span class="picto"><svg viewBox="0 0 50 45"><path d="M8 26h34c0 8-6 13-17 13S8 34 8 26zM13 22l7-5m1 5 7-7m1 7 7-5"/></svg></span><span class="picto"><svg viewBox="0 0 50 45"><path d="M8 26h34c0 8-6 13-17 13S8 34 8 26zM13 22l7-5m1 5 7-7m1 7 7-5"/></svg></span><span class="picto"><svg viewBox="0 0 50 45"><path d="M8 26h34c0 8-6 13-17 13S8 34 8 26zM13 22l7-5m1 5 7-7m1 7 7-5"/></svg></span>
-          <span class="picto"><svg viewBox="0 0 50 45"><path d="M8 26h34c0 8-6 13-17 13S8 34 8 26zM13 22l7-5m1 5 7-7m1 7 7-5"/></svg></span><span class="picto on"><svg viewBox="0 0 50 45"><path d="M8 26h34c0 8-6 13-17 13S8 34 8 26zM13 22l7-5m1 5 7-7m1 7 7-5"/></svg></span><span class="picto on"><svg viewBox="0 0 50 45"><path d="M8 26h34c0 8-6 13-17 13S8 34 8 26zM13 22l7-5m1 5 7-7m1 7 7-5"/></svg></span><span class="picto on"><svg viewBox="0 0 50 45"><path d="M8 26h34c0 8-6 13-17 13S8 34 8 26zM13 22l7-5m1 5 7-7m1 7 7-5"/></svg></span><span class="picto on"><svg viewBox="0 0 50 45"><path d="M8 26h34c0 8-6 13-17 13S8 34 8 26zM13 22l7-5m1 5 7-7m1 7 7-5"/></svg></span>
-        </div>
-        <div class="wide-copy"><span class="num">55%</span><b>de los hogares desplazados expuestos a inseguridad alimentaria**</b></div>
-      </button>
-    </section>
-
-    <aside class="right">
-      <button class="side poverty topic" type="button" data-topic="pobreza" data-title="96% en situación de pobreza" data-detail="La pobreza es casi generalizada dentro de la población desplazada según la infografía original, por lo que actúa como una condición transversal de vulnerabilidad.">
-        <div class="people" aria-hidden="true">
-          <span class="person"><svg viewBox="0 0 34 62"><circle cx="17" cy="8" r="6"/><path d="M11 16h12l5 18-5 2-3-10v30h-6V37h-3v19H5V26L2 36l-5-2 7-18z"/></svg></span><span class="person"><svg viewBox="0 0 34 62"><circle cx="17" cy="8" r="6"/><path d="M11 16h12l5 18-5 2-3-10v30h-6V37h-3v19H5V26L2 36l-5-2 7-18z"/></svg></span><span class="person"><svg viewBox="0 0 34 62"><circle cx="17" cy="8" r="6"/><path d="M11 16h12l5 18-5 2-3-10v30h-6V37h-3v19H5V26L2 36l-5-2 7-18z"/></svg></span><span class="person"><svg viewBox="0 0 34 62"><circle cx="17" cy="8" r="6"/><path d="M11 16h12l5 18-5 2-3-10v30h-6V37h-3v19H5V26L2 36l-5-2 7-18z"/></svg></span><span class="person"><svg viewBox="0 0 34 62"><circle cx="17" cy="8" r="6"/><path d="M11 16h12l5 18-5 2-3-10v30h-6V37h-3v19H5V26L2 36l-5-2 7-18z"/></svg></span>
-          <span class="person"><svg viewBox="0 0 34 62"><circle cx="17" cy="8" r="6"/><path d="M11 16h12l5 18-5 2-3-10v30h-6V37h-3v19H5V26L2 36l-5-2 7-18z"/></svg></span><span class="person"><svg viewBox="0 0 34 62"><circle cx="17" cy="8" r="6"/><path d="M11 16h12l5 18-5 2-3-10v30h-6V37h-3v19H5V26L2 36l-5-2 7-18z"/></svg></span><span class="person"><svg viewBox="0 0 34 62"><circle cx="17" cy="8" r="6"/><path d="M11 16h12l5 18-5 2-3-10v30h-6V37h-3v19H5V26L2 36l-5-2 7-18z"/></svg></span><span class="person"><svg viewBox="0 0 34 62"><circle cx="17" cy="8" r="6"/><path d="M11 16h12l5 18-5 2-3-10v30h-6V37h-3v19H5V26L2 36l-5-2 7-18z"/></svg></span><span class="person on"><svg viewBox="0 0 34 62"><circle cx="17" cy="8" r="6"/><path d="M11 16h12l5 18-5 2-3-10v30h-6V37h-3v19H5V26L2 36l-5-2 7-18z"/></svg></span>
-        </div>
-        <span class="num">96%</span><b>de la población desplazada se encuentra en situación de pobreza**</b>
-      </button>
-
-      <button class="side world topic" type="button" data-topic="desplazamiento" data-title="5.º país con mayor desplazamiento interno" data-detail="La infografía ubica a Colombia como el quinto país con mayor desplazamiento forzado interno en el mundo, mostrando la gran escala comparativa del fenómeno.">
-        <span class="globe" aria-hidden="true"></span>
-        <div><div class="rank">5to</div><p>país con mayor desplazamiento forzado interno en el mundo.****</p></div>
-      </button>
-
-      <button class="side odsbox topic" type="button" data-topic="pobreza" data-title="4 de cada 5 hogares desplazados viven en pobreza" data-detail="La pieza conecta este resultado con la agenda de no dejar a nadie atrás: la pobreza de los hogares desplazados representa una fracción importante de la pobreza total del país según la fuente original.">
-        <span class="ods" aria-hidden="true"></span>
-        <div><div class="ods-big">4 de cada 5</div><p>hogares desplazados viven en pobreza, representando cerca del 50% de toda la población pobre del país.*****</p></div>
-      </button>
-    </aside>
-  </section>
-
-  <section class="detail" aria-live="polite">
-    <div><small>Indicador seleccionado</small><div class="detail-title" id="detailTitle">9,1 millones de personas</div></div>
-    <div><p id="detailText">Personas registradas como desplazadas internas. La cifra evidencia la magnitud acumulada del desplazamiento y la presión sostenida sobre los sistemas de atención y reparación.</p><div class="hint">Toca cualquier indicador para ampliar su lectura. Usa los filtros superiores para resaltar un tema.</div></div>
-  </section>
-</main>
-<script>
-(() => {
-  const root=document.querySelector('.wrap');
-  const selectable=[...root.querySelectorAll('.metric,.wide,.side')];
-  const topics=[...root.querySelectorAll('.topic')];
-  const filters=[...root.querySelectorAll('.filter')];
-  const title=root.querySelector('#detailTitle');
-  const text=root.querySelector('#detailText');
-  selectable.forEach(el=>el.addEventListener('click',()=>{
-    selectable.forEach(x=>x.classList.remove('selected'));
-    el.classList.add('selected');
-    title.textContent=el.dataset.title||'Indicador';
-    text.textContent=el.dataset.detail||'';
-  }));
-  filters.forEach(btn=>btn.addEventListener('click',()=>{
-    const f=btn.dataset.filter;
-    filters.forEach(x=>x.classList.toggle('active',x===btn));
-    topics.forEach(el=>{
-      const values=(el.dataset.topic||'').split(/\s+/);
-      el.classList.toggle('dimmed',f!=='all'&&!values.includes(f));
-    });
-  }));
-})();
-</script>
-</body>
-</html>
+<header class="header"><div><p class="kicker">Situación de la población desplazada internamente en Colombia</p><h1>La población más vulnerable, entre la vulnerable</h1></div><nav class="filters" aria-label="Filtrar indicadores"><button class="filter active" type="button" data-filter="all">Todos</button><button class="filter" type="button" data-filter="vivienda">Vivienda</button><button class="filter" type="button" data-filter="pobreza">Pobreza e ingresos</button><button class="filter" type="button" data-filter="genero">Género</button><button class="filter" type="button" data-filter="etnico">Étnico</button><button class="filter" type="button" data-filter="desplazamiento">Desplazamiento</button></nav></header>
+<section class="layout">
+<section class="left"><h2 class="survey-title">IV Encuesta Nacional de Goce<br>Efectivo de Derechos</h2><div class="survey-list">
+<div class="survey-row topic" data-topic="desplazamiento pobreza"><svg viewBox="0 0 48 48"><path d="M5 39h38M13 39V26h9v13M28 39V15h10v24M31 20h3M31 25h3M31 30h3M31 35h3"/><path d="M7 14h11M14 9l5 5-5 5"/></svg><strong>75%</strong><span class="label">vive en las zonas de recepción urbanas</span></div>
+<div class="survey-row topic" data-topic="vivienda"><svg viewBox="0 0 48 48"><path d="M7 22 24 8l17 14v18H29V29H19v11H7z"/><circle cx="9" cy="9" r="5"/><path d="m6 6 6 6m0-6-6 6"/></svg><strong>86%</strong><span class="label">no tiene acceso a vivienda adecuada</span></div>
+<div class="survey-row topic" data-topic="pobreza"><svg viewBox="0 0 48 48"><circle cx="24" cy="10" r="5"/><path d="M24 16v14M16 22l8-6 8 6M20 30l-4 11M28 30l4 11"/></svg><strong>40%</strong><span class="label">vive en extrema pobreza</span></div></div>
+<div class="narratives"><div class="narrative topic" data-topic="etnico"><strong>44%</strong> jefes de hogar de pueblos indígenas</div><div class="narrative topic" data-topic="pobreza"><strong>8 de cada 10</strong> en informalidad laboral</div><div class="narrative topic" data-topic="etnico"><strong>48%</strong> tiene jefes de hogar a personas afrocolombianas</div></div></section>
+<section class="center"><div class="metric-grid">
+<button class="metric selected topic" type="button" data-topic="desplazamiento"><div class="metric-head"><span class="badge"><svg viewBox="0 0 24 24"><circle cx="8" cy="5" r="2"/><path d="M7 8l-2 5 3 2 1 5M8 10l5 2 2-3M14 15h7m-3-3 3 3-3 3"/></svg></span><span class="num">9.1</span></div><b>millones de personas*</b><p>registradas como desplazadas internas, de las cuales 7.1 millones requieren atención o reparación.</p></button>
+<button class="metric topic" type="button" data-topic="genero"><div class="metric-head"><span class="badge"><svg viewBox="0 0 24 24"><circle cx="12" cy="5" r="2"/><path d="M12 8v6M8 12h8M9 20l3-6 3 6M12 14v6"/></svg></span><span class="num">65%</span></div><b>de los hogares desplazados*</b><p>son liderados por mujeres.</p></button>
+<button class="metric topic" type="button" data-topic="desplazamiento"><div class="metric-head"><span class="badge"><svg viewBox="0 0 24 24"><circle cx="8" cy="5" r="2"/><path d="M7 8l-2 5 3 2 1 5M8 10l5 2 2-3M14 15h7m-3-3 3 3-3 3"/></svg></span><span class="num">1.7</span></div><b>millones de personas*</b><p>desplazadas internas después del Acuerdo de Paz (2016).</p></button>
+<button class="metric topic" type="button" data-topic="etnico desplazamiento"><div class="metric-head"><span class="badge"><svg viewBox="0 0 24 24"><path d="M3 11 12 4l9 7v9H3zM7 20v-5h3v5m4 0v-5h3v5"/></svg></span><span class="num">80%</span></div><b>de los desplazamientos forzados*</b><p>ocurrieron en territorios étnicos, entre 2022 y 2024.</p></button></div>
+<button class="wide topic" type="button" data-topic="vivienda"><div class="pictos"><span class="picto"><svg viewBox="0 0 50 45"><path d="M5 21 25 5l20 16v20H31V29H19v12H5z"/></svg></span><span class="picto"><svg viewBox="0 0 50 45"><path d="M5 21 25 5l20 16v20H31V29H19v12H5z"/></svg></span><span class="picto"><svg viewBox="0 0 50 45"><path d="M5 21 25 5l20 16v20H31V29H19v12H5z"/></svg></span><span class="picto"><svg viewBox="0 0 50 45"><path d="M5 21 25 5l20 16v20H31V29H19v12H5z"/></svg></span><span class="picto"><svg viewBox="0 0 50 45"><path d="M5 21 25 5l20 16v20H31V29H19v12H5z"/></svg></span><span class="picto"><svg viewBox="0 0 50 45"><path d="M5 21 25 5l20 16v20H31V29H19v12H5z"/></svg></span><span class="picto"><svg viewBox="0 0 50 45"><path d="M5 21 25 5l20 16v20H31V29H19v12H5z"/></svg></span><span class="picto"><svg viewBox="0 0 50 45"><path d="M5 21 25 5l20 16v20H31V29H19v12H5z"/></svg></span><span class="picto on"><svg viewBox="0 0 50 45"><path d="M5 21 25 5l20 16v20H31V29H19v12H5z"/></svg></span><span class="picto on"><svg viewBox="0 0 50 45"><path d="M5 21 25 5l20 16v20H31V29H19v12H5z"/></svg></span></div><div class="wide-copy"><span class="num">86%</span><b>no cuentan con una vivienda adecuada***</b></div></button>
+<button class="wide topic" type="button" data-topic="pobreza"><div class="pictos"><span class="picto"><svg viewBox="0 0 50 45"><circle cx="25" cy="13" r="7"/><path d="M11 39c1-12 7-18 14-18s13 6 14 18H11z"/></svg></span><span class="picto"><svg viewBox="0 0 50 45"><circle cx="25" cy="13" r="7"/><path d="M11 39c1-12 7-18 14-18s13 6 14 18H11z"/></svg></span><span class="picto"><svg viewBox="0 0 50 45"><circle cx="25" cy="13" r="7"/><path d="M11 39c1-12 7-18 14-18s13 6 14 18H11z"/></svg></span><span class="picto"><svg viewBox="0 0 50 45"><circle cx="25" cy="13" r="7"/><path d="M11 39c1-12 7-18 14-18s13 6 14 18H11z"/></svg></span><span class="picto on"><svg viewBox="0 0 50 45"><circle cx="25" cy="13" r="7"/><path d="M11 39c1-12 7-18 14-18s13 6 14 18H11z"/></svg></span><span class="picto"><svg viewBox="0 0 50 45"><circle cx="25" cy="13" r="7"/><path d="M11 39c1-12 7-18 14-18s13 6 14 18H11z"/></svg></span><span class="picto"><svg viewBox="0 0 50 45"><circle cx="25" cy="13" r="7"/><path d="M11 39c1-12 7-18 14-18s13 6 14 18H11z"/></svg></span><span class="picto"><svg viewBox="0 0 50 45"><circle cx="25" cy="13" r="7"/><path d="M11 39c1-12 7-18 14-18s13 6 14 18H11z"/></svg></span><span class="picto"><svg viewBox="0 0 50 45"><circle cx="25" cy="13" r="7"/><path d="M11 39c1-12 7-18 14-18s13 6 14 18H11z"/></svg></span><span class="picto on"><svg viewBox="0 0 50 45"><circle cx="25" cy="13" r="7"/><path d="M11 39c1-12 7-18 14-18s13 6 14 18H11z"/></svg></span></div><div class="wide-copy"><span class="num">82%</span><b>trabaja en condiciones de informalidad**</b></div></button>
+<button class="wide topic" type="button" data-topic="pobreza"><div class="pictos"><span class="picto"><svg viewBox="0 0 50 45"><path d="M8 26h34c0 8-6 13-17 13S8 34 8 26zM13 22l7-5m1 5 7-7m1 7 7-5"/></svg></span><span class="picto"><svg viewBox="0 0 50 45"><path d="M8 26h34c0 8-6 13-17 13S8 34 8 26zM13 22l7-5m1 5 7-7m1 7 7-5"/></svg></span><span class="picto"><svg viewBox="0 0 50 45"><path d="M8 26h34c0 8-6 13-17 13S8 34 8 26zM13 22l7-5m1 5 7-7m1 7 7-5"/></svg></span><span class="picto"><svg viewBox="0 0 50 45"><path d="M8 26h34c0 8-6 13-17 13S8 34 8 26zM13 22l7-5m1 5 7-7m1 7 7-5"/></svg></span><span class="picto"><svg viewBox="0 0 50 45"><path d="M8 26h34c0 8-6 13-17 13S8 34 8 26zM13 22l7-5m1 5 7-7m1 7 7-5"/></svg></span><span class="picto"><svg viewBox="0 0 50 45"><path d="M8 26h34c0 8-6 13-17 13S8 34 8 26zM13 22l7-5m1 5 7-7m1 7 7-5"/></svg></span><span class="picto on"><svg viewBox="0 0 50 45"><path d="M8 26h34c0 8-6 13-17 13S8 34 8 26zM13 22l7-5m1 5 7-7m1 7 7-5"/></svg></span><span class="picto on"><svg viewBox="0 0 50 45"><path d="M8 26h34c0 8-6 13-17 13S8 34 8 26zM13 22l7-5m1 5 7-7m1 7 7-5"/></svg></span><span class="picto on"><svg viewBox="0 0 50 45"><path d="M8 26h34c0 8-6 13-17 13S8 34 8 26zM13 22l7-5m1 5 7-7m1 7 7-5"/></svg></span><span class="picto on"><svg viewBox="0 0 50 45"><path d="M8 26h34c0 8-6 13-17 13S8 34 8 26zM13 22l7-5m1 5 7-7m1 7 7-5"/></svg></span></div><div class="wide-copy"><span class="num">55%</span><b>de los hogares desplazados expuestos a inseguridad alimentaria**</b></div></button></section>
+<aside class="right">
+<button class="side poverty topic" type="button" data-topic="pobreza"><div class="people"><span class="person"><svg viewBox="0 0 34 62"><circle cx="17" cy="8" r="6"/><path d="M11 16h12l5 18-5 2-3-10v30h-6V37h-3v19H5V26L2 36l-5-2 7-18z"/></svg></span><span class="person"><svg viewBox="0 0 34 62"><circle cx="17" cy="8" r="6"/><path d="M11 16h12l5 18-5 2-3-10v30h-6V37h-3v19H5V26L2 36l-5-2 7-18z"/></svg></span><span class="person"><svg viewBox="0 0 34 62"><circle cx="17" cy="8" r="6"/><path d="M11 16h12l5 18-5 2-3-10v30h-6V37h-3v19H5V26L2 36l-5-2 7-18z"/></svg></span><span class="person"><svg viewBox="0 0 34 62"><circle cx="17" cy="8" r="6"/><path d="M11 16h12l5 18-5 2-3-10v30h-6V37h-3v19H5V26L2 36l-5-2 7-18z"/></svg></span><span class="person"><svg viewBox="0 0 34 62"><circle cx="17" cy="8" r="6"/><path d="M11 16h12l5 18-5 2-3-10v30h-6V37h-3v19H5V26L2 36l-5-2 7-18z"/></svg></span><span class="person"><svg viewBox="0 0 34 62"><circle cx="17" cy="8" r="6"/><path d="M11 16h12l5 18-5 2-3-10v30h-6V37h-3v19H5V26L2 36l-5-2 7-18z"/></svg></span><span class="person"><svg viewBox="0 0 34 62"><circle cx="17" cy="8" r="6"/><path d="M11 16h12l5 18-5 2-3-10v30h-6V37h-3v19H5V26L2 36l-5-2 7-18z"/></svg></span><span class="person"><svg viewBox="0 0 34 62"><circle cx="17" cy="8" r="6"/><path d="M11 16h12l5 18-5 2-3-10v30h-6V37h-3v19H5V26L2 36l-5-2 7-18z"/></svg></span><span class="person"><svg viewBox="0 0 34 62"><circle cx="17" cy="8" r="6"/><path d="M11 16h12l5 18-5 2-3-10v30h-6V37h-3v19H5V26L2 36l-5-2 7-18z"/></svg></span><span class="person on"><svg viewBox="0 0 34 62"><circle cx="17" cy="8" r="6"/><path d="M11 16h12l5 18-5 2-3-10v30h-6V37h-3v19H5V26L2 36l-5-2 7-18z"/></svg></span></div><span class="num">96%</span><b>de la población desplazada se encuentra en situación de pobreza**</b></button>
+<button class="side world topic" type="button" data-topic="desplazamiento"><span class="globe"></span><div><div class="rank">5to</div><p>país con mayor desplazamiento forzado interno en el mundo.****</p></div></button>
+<button class="side odsbox topic" type="button" data-topic="pobreza"><span class="ods"></span><div><div class="ods-big">4 de cada 5</div><p>hogares desplazados viven en pobreza, representando cerca del 50% de toda la población pobre del país.*****</p></div></button></aside>
+</section></main>
+<script>(()=>{const root=document.querySelector('.wrap');const selectable=[...root.querySelectorAll('.metric,.wide,.side')];const topics=[...root.querySelectorAll('.topic')];const filters=[...root.querySelectorAll('.filter')];selectable.forEach(el=>el.addEventListener('click',()=>{selectable.forEach(x=>x.classList.remove('selected'));el.classList.add('selected')}));filters.forEach(btn=>btn.addEventListener('click',()=>{const f=btn.dataset.filter;filters.forEach(x=>x.classList.toggle('active',x===btn));topics.forEach(el=>{const values=(el.dataset.topic||'').split(/\s+/);el.classList.toggle('dimmed',f!=='all'&&!values.includes(f))})}))})();</script>
+</body></html>
