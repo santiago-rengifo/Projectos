@@ -5,10 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>StoryMaps · Módulos interactivos</title>
   <style>
-    :root{--bg:#f4f3f1;--ink:#172627;--green:#20cd8d;--green-dark:#0e5d50;--card:#fff}
+    :root{--bg:#f4f3f1;--ink:#172627;--green:#20cd8d;--blue:#0b6fa4;--card:#fff}
     *{box-sizing:border-box}body{margin:0;font-family:Arial,Helvetica,sans-serif;background:var(--bg);color:var(--ink)}
     main{max-width:980px;margin:0 auto;padding:64px 24px}h1{font-size:clamp(2rem,5vw,4rem);margin:0 0 16px;line-height:1}.intro{max-width:720px;font-size:1.1rem;line-height:1.6;margin-bottom:40px}
-    .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:18px}.item{display:block;text-decoration:none;color:inherit;background:var(--card);border-radius:24px;padding:26px;border:1px solid rgba(23,38,39,.08);transition:.2s transform,.2s box-shadow}.item:hover{transform:translateY(-3px);box-shadow:0 14px 34px rgba(23,38,39,.10)}.tag{display:inline-block;background:var(--green);padding:6px 10px;border-radius:999px;font-weight:700;font-size:.8rem;margin-bottom:24px}.item h2{margin:0 0 8px;font-size:1.35rem}.item p{margin:0;line-height:1.5;color:#435252}
+    .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:18px}.item{display:block;text-decoration:none;color:inherit;background:var(--card);border-radius:24px;padding:26px;border:1px solid rgba(23,38,39,.08);transition:.2s transform,.2s box-shadow}.item:hover{transform:translateY(-3px);box-shadow:0 14px 34px rgba(23,38,39,.10)}.tag{display:inline-block;padding:6px 10px;border-radius:999px;font-weight:700;font-size:.8rem;margin-bottom:24px}.tag.green{background:var(--green)}.tag.blue{background:#d9eef8;color:#074c73}.item h2{margin:0 0 8px;font-size:1.35rem}.item p{margin:0;line-height:1.5;color:#435252}
   </style>
 </head>
 <body>
@@ -17,9 +17,14 @@
     <p class="intro">Colección de componentes HTML ligeros para integrar en ArcGIS StoryMaps mediante bloques Embed. Cada módulo funciona de manera independiente y es responsive.</p>
     <section class="grid">
       <a class="item" href="./como-trabajamos/">
-        <span class="tag">StoryMaps</span>
+        <span class="tag green">StoryMaps</span>
         <h2>Cómo y con quién trabajamos</h2>
         <p>Cuadrícula interactiva de tarjetas con información ampliable.</p>
+      </a>
+      <a class="item" href="./poblacion-vulnerable/">
+        <span class="tag blue">Infografía interactiva</span>
+        <h2>La población más vulnerable, entre la vulnerable</h2>
+        <p>Indicadores de desplazamiento, pobreza, vivienda, género y afectación étnica con filtros temáticos.</p>
       </a>
     </section>
   </main>
