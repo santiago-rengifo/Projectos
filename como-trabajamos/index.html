@@ -1,0 +1,189 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <title>Cómo y con quién trabajamos</title>
+  <style>
+    :root{
+      --bg:#dddcd9;
+      --card:#20cd8d;
+      --ink:#172627;
+      --ink-soft:#244344;
+      --radius:28px;
+      --gap:18px;
+    }
+    *{box-sizing:border-box}
+    html,body{margin:0;background:var(--bg);color:var(--ink);font-family:Arial,Helvetica,sans-serif}
+    body{min-height:100vh}
+    .wrap{max-width:1180px;margin:0 auto;padding:46px 32px 52px}
+    .layout{
+      display:grid;
+      grid-template-columns:1.05fr 1fr 1fr 1fr;
+      grid-template-areas:
+        "intro levels partners approach"
+        "legal components since resources";
+      gap:var(--gap);
+      align-items:stretch;
+    }
+    .intro{grid-area:intro;display:flex;flex-direction:column;gap:26px}
+    .title-row{display:flex;align-items:flex-start;gap:18px;padding:10px 0 0}
+    .accent{width:7px;height:43px;background:var(--card);border-radius:999px;flex:0 0 auto}
+    h1{font-size:clamp(2rem,3.4vw,3.15rem);line-height:.98;margin:0;letter-spacing:-.03em;max-width:240px}
+    .card{
+      background:var(--card);
+      border-radius:var(--radius);
+      padding:22px 22px 24px;
+      min-height:245px;
+      position:relative;
+      overflow:hidden;
+      display:flex;
+      flex-direction:column;
+      border:1px solid rgba(23,38,39,.06);
+      transition:transform .22s ease, box-shadow .22s ease;
+    }
+    .card:hover{transform:translateY(-2px);box-shadow:0 12px 30px rgba(23,38,39,.10)}
+    .legal{grid-area:legal;min-height:370px}.levels{grid-area:levels}.partners{grid-area:partners}.approach{grid-area:approach}.components{grid-area:components}.since{grid-area:since}.resources{grid-area:resources}
+    .topline{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;margin-bottom:18px}
+    .icon{width:42px;height:42px;display:grid;place-items:center;color:var(--ink)}
+    .icon svg{width:38px;height:38px;stroke:currentColor;stroke-width:1.75;fill:none;stroke-linecap:round;stroke-linejoin:round}
+    .toggle{
+      border:0;background:var(--ink);color:var(--card);width:29px;height:29px;border-radius:50%;display:grid;place-items:center;cursor:pointer;font-size:22px;line-height:1;padding:0;transition:transform .18s ease,background .18s ease;
+    }
+    .toggle:hover{transform:scale(1.07)}
+    .toggle:focus-visible{outline:3px solid rgba(23,38,39,.28);outline-offset:3px}
+    .card h2{font-size:clamp(1.28rem,2vw,1.8rem);line-height:1.02;margin:0 0 10px;letter-spacing:-.02em}
+    .summary{font-size:1rem;line-height:1.3;margin:0;color:var(--ink);font-weight:600}
+    .detail{max-height:0;overflow:hidden;opacity:0;transition:max-height .3s ease,opacity .22s ease,margin-top .3s ease;margin-top:0}
+    .card.open .detail{max-height:320px;opacity:1;margin-top:16px}
+    .detail p,.detail li{font-size:.98rem;line-height:1.35}.detail p{margin:0}.detail ul,.detail ol{margin:0;padding-left:20px}.detail li+li{margin-top:4px}
+    .big-year{font-size:clamp(2.2rem,4.2vw,3.4rem);font-weight:700;line-height:.96;letter-spacing:-.04em;margin-top:auto}
+    .legal .summary{font-size:1.08rem;line-height:1.25}.legal .detail{font-weight:600}
+    .note{font-size:.86rem;color:var(--ink-soft);margin-top:auto;padding-top:18px}
+    @media (max-width:980px){
+      .wrap{padding:28px 20px 36px}
+      .layout{grid-template-columns:1fr 1fr;grid-template-areas:"intro intro" "legal levels" "partners approach" "components since" "resources resources"}
+      .intro{display:grid;grid-template-columns:1fr 1fr;gap:var(--gap);align-items:stretch}
+      .title-row{align-self:start}.legal{min-height:300px}
+    }
+    @media (max-width:640px){
+      .wrap{padding:22px 14px 28px}
+      .layout{display:flex;flex-direction:column}.intro{display:flex}.title-row{padding:4px 6px 4px}
+      h1{max-width:none;font-size:2.35rem}.card{min-height:0;padding:20px;border-radius:24px}.legal{min-height:0}
+      .big-year{margin-top:18px}.card.open .detail{max-height:500px}
+    }
+    @media (prefers-reduced-motion:reduce){*{scroll-behavior:auto!important}.card,.toggle,.detail{transition:none!important}}
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <section class="layout" aria-label="Cómo y con quién trabajamos">
+      <div class="intro">
+        <div class="title-row">
+          <span class="accent" aria-hidden="true"></span>
+          <h1>Cómo y con quién trabajamos</h1>
+        </div>
+
+        <article class="card legal" data-card>
+          <div class="topline">
+            <div class="icon" aria-hidden="true">
+              <svg viewBox="0 0 48 48"><rect x="8" y="11" width="31" height="28" rx="2"/><path d="M13 7v8M22 7v8M31 7v8M8 18h31M14 24h5M23 24h5M32 24h2M14 30h5M23 30h5M32 30h2"/></svg>
+            </div>
+            <button class="toggle" aria-expanded="false" aria-label="Ampliar información">+</button>
+          </div>
+          <h2>Legalización de asentamientos y titulación de predios</h2>
+          <p class="summary">Constitución, ampliación y saneamiento de resguardos, protección y restitución de tierras.</p>
+          <div class="detail">
+            <p>El trabajo combina acciones sobre seguridad jurídica de la tenencia, regularización y fortalecimiento territorial, articulando respuestas según las características de cada comunidad y territorio.</p>
+          </div>
+        </article>
+      </div>
+
+      <article class="card levels" data-card>
+        <div class="topline">
+          <div class="icon" aria-hidden="true">
+            <svg viewBox="0 0 48 48"><path d="M13 8h21v27H13z"/><path d="M17 12h13M17 17h13M17 22h9M34 14l5 3v17l-5 5"/><path d="M13 35h21"/></svg>
+          </div>
+          <button class="toggle" aria-expanded="false" aria-label="Ampliar información">+</button>
+        </div>
+        <h2>Niveles de intervención</h2>
+        <p class="summary">Nacional · Territorial · Comunitario</p>
+        <div class="detail"><ol><li>Nacional</li><li>Territorial</li><li>Comunitario</li></ol></div>
+      </article>
+
+      <article class="card partners" data-card>
+        <div class="topline">
+          <div class="icon" aria-hidden="true">
+            <svg viewBox="0 0 48 48"><path d="M8 38h31M11 35V22h6v13M21 35V16h6v19M31 35V10h6v25"/></svg>
+          </div>
+          <button class="toggle" aria-expanded="false" aria-label="Ampliar información">+</button>
+        </div>
+        <h2>Trabajamos con</h2>
+        <p class="summary">MinVivienda, Secretarías de Planeación, ANT, CNTI, URT, entre otros.</p>
+        <div class="detail"><p>La articulación institucional permite combinar competencias nacionales y territoriales para responder de manera coordinada a las necesidades del territorio.</p></div>
+      </article>
+
+      <article class="card approach" data-card>
+        <div class="topline">
+          <div class="icon" aria-hidden="true">
+            <svg viewBox="0 0 48 48"><circle cx="24" cy="14" r="7"/><path d="M14 39v-8c0-6 4-10 10-10s10 4 10 10v8M18 39v-7M30 39v-7"/></svg>
+          </div>
+          <button class="toggle" aria-expanded="false" aria-label="Ampliar información">+</button>
+        </div>
+        <h2>Enfoque de área</h2>
+        <p class="summary">Busca beneficiar a todas las personas que habitan el territorio.</p>
+        <div class="detail"><p>La intervención se plantea desde el territorio y no únicamente desde grupos aislados, promoviendo soluciones integrales y de alcance comunitario.</p></div>
+      </article>
+
+      <article class="card components" data-card>
+        <div class="topline">
+          <div class="icon" aria-hidden="true">
+            <svg viewBox="0 0 48 48"><rect x="8" y="10" width="12" height="10"/><rect x="24" y="10" width="16" height="10"/><rect x="8" y="25" width="32" height="13"/><path d="M15 28v7l6-3.5z"/></svg>
+          </div>
+          <button class="toggle" aria-expanded="false" aria-label="Ampliar información">+</button>
+        </div>
+        <h2>Componentes</h2>
+        <p class="summary">Jurídico · Social · Técnico · Procedimiento administrativo</p>
+        <div class="detail"><ul><li>Jurídico</li><li>Social</li><li>Técnico</li><li>Procedimiento administrativo</li></ul></div>
+      </article>
+
+      <article class="card since" data-card>
+        <div class="topline">
+          <div class="icon" aria-hidden="true">
+            <svg viewBox="0 0 48 48"><path d="M18 34h12M20 39h8M17 29c-4-3-7-7-7-13a14 14 0 0 1 28 0c0 6-3 10-7 13-2 2-3 4-3 6h-8c0-2-1-4-3-6z"/></svg>
+          </div>
+          <button class="toggle" aria-expanded="false" aria-label="Ampliar información">+</button>
+        </div>
+        <h2>Trabajo continuado desde</h2>
+        <div class="big-year">2011</div>
+        <div class="detail"><p>La continuidad del trabajo ha permitido acumular experiencia, aprendizajes y relaciones institucionales a lo largo del tiempo.</p></div>
+      </article>
+
+      <article class="card resources" data-card>
+        <div class="topline">
+          <div class="icon" aria-hidden="true">
+            <svg viewBox="0 0 48 48"><path d="M24 40S8 31 8 19c0-6 4-10 9-10 4 0 6 2 7 5 1-3 4-5 7-5 5 0 9 4 9 10 0 12-16 21-16 21z"/></svg>
+          </div>
+          <button class="toggle" aria-expanded="false" aria-label="Ampliar información">+</button>
+        </div>
+        <h2>Publicaciones y vídeos con MinVivienda</h2>
+        <p class="summary">Materiales para profundizar en procesos, resultados y aprendizajes.</p>
+        <div class="detail"><p>Aquí pueden incorporarse enlaces directos a publicaciones, vídeos, documentos técnicos o piezas multimedia relacionadas con el trabajo conjunto.</p></div>
+      </article>
+    </section>
+  </main>
+
+  <script>
+    document.querySelectorAll('[data-card]').forEach(card => {
+      const button = card.querySelector('.toggle');
+      button.addEventListener('click', () => {
+        const open = card.classList.toggle('open');
+        button.textContent = open ? '−' : '+';
+        button.setAttribute('aria-expanded', String(open));
+        button.setAttribute('aria-label', open ? 'Cerrar información' : 'Ampliar información');
+      });
+    });
+  </script>
+</body>
+</html>
