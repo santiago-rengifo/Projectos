@@ -1,0 +1,514 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <title>Un camino de aprendizajes</title>
+  <style>
+    :root{
+      --bg:#eef1f3;
+      --ink:#141414;
+      --muted:#5b6268;
+      --context:#232323;
+      --blue:#087bbd;
+      --line:#6d7276;
+      --soft-line:#c9cfd3;
+      --white:#ffffff;
+      --radius:999px;
+    }
+
+    *{box-sizing:border-box}
+
+    html,body{
+      margin:0;
+      background:var(--bg);
+      color:var(--ink);
+      font-family:Arial,Helvetica,sans-serif;
+    }
+
+    button{font:inherit}
+
+    .timeline-app{
+      width:100%;
+      max-width:1480px;
+      margin:0 auto;
+      padding:34px clamp(18px,4vw,64px) 44px;
+    }
+
+    .topbar{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:24px;
+      margin-bottom:26px;
+    }
+
+    .heading{
+      display:flex;
+      gap:16px;
+      align-items:flex-start;
+    }
+
+    .accent{
+      width:7px;
+      height:48px;
+      border-radius:999px;
+      background:var(--blue);
+      flex:0 0 auto;
+      margin-top:3px;
+    }
+
+    h1{
+      margin:0;
+      max-width:330px;
+      font-size:clamp(2rem,3.4vw,3.2rem);
+      line-height:.95;
+      letter-spacing:-.035em;
+    }
+
+    .filters{
+      display:flex;
+      flex-wrap:wrap;
+      gap:8px;
+      justify-content:flex-end;
+    }
+
+    .filter{
+      border:1px solid #c8cfd3;
+      border-radius:999px;
+      background:#fff;
+      color:#24313a;
+      padding:9px 14px;
+      font-weight:700;
+      cursor:pointer;
+      transition:.18s ease;
+    }
+
+    .filter:hover,
+    .filter:focus-visible{
+      border-color:var(--blue);
+      outline:none;
+    }
+
+    .filter.active{
+      background:var(--blue);
+      color:#fff;
+      border-color:var(--blue);
+    }
+
+    .legend{
+      display:flex;
+      gap:18px;
+      flex-wrap:wrap;
+      margin:0 0 24px;
+      padding-left:2px;
+    }
+
+    .legend-item{
+      display:flex;
+      gap:9px;
+      align-items:center;
+      font-size:.92rem;
+      color:#313a40;
+      font-weight:700;
+    }
+
+    .legend-line{
+      width:42px;
+      height:9px;
+      border-radius:999px;
+      background:var(--context);
+    }
+
+    .legend-line.blue{background:var(--blue)}
+
+    .timeline{
+      position:relative;
+      display:grid;
+      grid-template-columns:minmax(0,1fr) 92px minmax(0,1.25fr);
+      gap:28px;
+      align-items:start;
+      padding:6px 0 0;
+    }
+
+    .timeline::before{
+      content:"";
+      position:absolute;
+      top:0;
+      bottom:0;
+      left:calc(50% - 14px);
+      width:10px;
+      border-radius:999px;
+      background:var(--line);
+      transform:translateX(-50%);
+      z-index:0;
+    }
+
+    .year{
+      grid-column:2;
+      justify-self:center;
+      align-self:start;
+      position:relative;
+      z-index:2;
+      min-width:74px;
+      padding:5px 10px;
+      border-radius:999px;
+      background:var(--bg);
+      color:#51585d;
+      text-align:center;
+      font-size:1rem;
+      letter-spacing:.08em;
+      font-weight:700;
+    }
+
+    .event{
+      position:relative;
+      z-index:1;
+      width:min(100%,520px);
+      border:0;
+      background:transparent;
+      text-align:left;
+      padding:0;
+      cursor:pointer;
+      opacity:1;
+      transition:opacity .18s ease,transform .18s ease;
+    }
+
+    .event.context{
+      grid-column:1;
+      justify-self:end;
+      text-align:right;
+      padding-right:10px;
+    }
+
+    .event.solution{
+      grid-column:3;
+      justify-self:start;
+      padding-left:10px;
+    }
+
+    .event.dimmed{opacity:.14}
+
+    .event:hover{transform:translateY(-2px)}
+    .event:focus-visible{outline:3px solid rgba(8,123,189,.28);outline-offset:5px;border-radius:18px}
+
+    .pill{
+      display:inline-block;
+      max-width:100%;
+      padding:10px 18px;
+      border-radius:var(--radius);
+      color:#fff;
+      font-weight:800;
+      line-height:1.08;
+      font-size:1rem;
+      background:var(--context);
+      box-shadow:0 1px 0 rgba(0,0,0,.06);
+    }
+
+    .solution .pill{background:var(--blue)}
+
+    .event.active .pill{
+      box-shadow:0 0 0 4px rgba(8,123,189,.16);
+    }
+
+    .context.active .pill{
+      box-shadow:0 0 0 4px rgba(35,35,35,.13);
+    }
+
+    .detail{
+      margin-top:7px;
+      font-size:.9rem;
+      line-height:1.28;
+      color:#30383d;
+      max-width:500px;
+    }
+
+    .context .detail{margin-left:auto}
+
+    .law{
+      display:block;
+      margin-top:6px;
+      font-size:.76rem;
+      color:#555d62;
+      font-weight:700;
+    }
+
+    .info-panel{
+      margin-top:30px;
+      padding:18px 20px;
+      border-top:1px solid #cfd5d8;
+      display:grid;
+      grid-template-columns:190px 1fr;
+      gap:20px;
+      min-height:95px;
+    }
+
+    .info-kicker{
+      font-size:.78rem;
+      text-transform:uppercase;
+      letter-spacing:.11em;
+      font-weight:900;
+      color:var(--blue);
+    }
+
+    .info-title{
+      margin-top:4px;
+      font-size:1.05rem;
+      font-weight:900;
+      color:#193b50;
+    }
+
+    .info-text{
+      margin:0;
+      color:#3a454c;
+      line-height:1.4;
+    }
+
+    .hint{
+      margin-top:7px;
+      font-size:.8rem;
+      color:#6a7379;
+    }
+
+    .r1997{grid-row:1}
+    .r2001{grid-row:2}
+    .r2002{grid-row:3}
+    .r2004{grid-row:4}
+    .r2007{grid-row:5}
+    .r2011{grid-row:6}
+    .r2016{grid-row:7}
+    .r2022{grid-row:8}
+    .r2025{grid-row:9}
+
+    .timeline > *{min-width:0}
+
+    .year.r1997{margin-top:0}
+    .year.r2001{margin-top:24px}
+    .year.r2002{margin-top:10px}
+    .year.r2004{margin-top:8px}
+    .year.r2007{margin-top:16px}
+    .year.r2011{margin-top:28px}
+    .year.r2016{margin-top:34px}
+    .year.r2022{margin-top:42px}
+    .year.r2025{margin-top:32px}
+
+    .event.r1997{margin-top:0}
+    .event.r2001{margin-top:14px}
+    .event.r2002{margin-top:4px}
+    .event.r2004{margin-top:2px}
+    .event.r2007{margin-top:12px}
+    .event.r2011{margin-top:18px}
+    .event.r2016{margin-top:26px}
+    .event.r2022{margin-top:34px}
+    .event.r2025{margin-top:24px}
+
+    @media(max-width:900px){
+      .topbar{flex-direction:column}
+      .filters{justify-content:flex-start}
+      .timeline{
+        grid-template-columns:74px 1fr;
+        gap:16px;
+      }
+      .timeline::before{
+        left:37px;
+        transform:none;
+        width:7px;
+      }
+      .year{
+        grid-column:1;
+        justify-self:center;
+        min-width:64px;
+        padding:5px 5px;
+        font-size:.88rem;
+      }
+      .event.context,
+      .event.solution{
+        grid-column:2;
+        justify-self:stretch;
+        text-align:left;
+        padding:0 0 0 8px;
+        width:100%;
+      }
+      .context .detail{margin-left:0}
+      .event{margin-top:0!important}
+      .year{margin-top:0!important}
+      .timeline{row-gap:18px}
+      .r1997,.r2001,.r2002,.r2004,.r2007,.r2011,.r2016,.r2022,.r2025{grid-row:auto}
+      .year.r1997{grid-row:1}.event.r1997.context{grid-row:1}.event.r1997.solution{grid-row:2}
+      .year.r2001{grid-row:3}.event.r2001.solution{grid-row:3}
+      .year.r2002{grid-row:4}.event.r2002.context{grid-row:4}
+      .year.r2004{grid-row:5}.event.r2004.context{grid-row:5}
+      .year.r2007{grid-row:6}.event.r2007.context{grid-row:6}
+      .year.r2011{grid-row:7}.event.r2011.context{grid-row:7}.event.r2011.solution{grid-row:8}
+      .year.r2016{grid-row:9}.event.r2016.context{grid-row:9}.event.r2016.solution{grid-row:10}
+      .year.r2022{grid-row:11}.event.r2022.solution{grid-row:11}
+      .year.r2025{grid-row:12}.event.r2025.context{grid-row:12}.event.r2025.solution{grid-row:13}
+      .pill{font-size:.95rem}
+    }
+
+    @media(max-width:560px){
+      .timeline-app{padding:22px 14px 30px}
+      .heading{gap:11px}
+      h1{font-size:2.25rem}
+      .accent{height:42px}
+      .filters{flex-wrap:nowrap;overflow-x:auto;max-width:100%;padding-bottom:3px}
+      .filter{white-space:nowrap}
+      .legend{gap:12px}
+      .timeline{grid-template-columns:60px 1fr;gap:12px}
+      .timeline::before{left:30px}
+      .year{min-width:54px;font-size:.78rem}
+      .pill{padding:9px 14px;font-size:.9rem}
+      .detail{font-size:.85rem}
+      .info-panel{grid-template-columns:1fr;padding:16px 0 0}
+    }
+
+    @media(prefers-reduced-motion:reduce){
+      *{transition:none!important}
+    }
+  </style>
+</head>
+<body>
+<main class="timeline-app">
+  <header class="topbar">
+    <div class="heading">
+      <span class="accent" aria-hidden="true"></span>
+      <h1>Un camino de aprendizajes</h1>
+    </div>
+
+    <nav class="filters" aria-label="Filtrar línea de tiempo">
+      <button type="button" class="filter active" data-filter="all">Todo</button>
+      <button type="button" class="filter" data-filter="context">Contexto</button>
+      <button type="button" class="filter" data-filter="solution">Tierras y vivienda</button>
+    </nav>
+  </header>
+
+  <div class="legend" aria-label="Leyenda">
+    <div class="legend-item"><span class="legend-line"></span>Contexto</div>
+    <div class="legend-item"><span class="legend-line blue"></span>Progresos en soluciones de tierras y vivienda</div>
+  </div>
+
+  <section class="timeline" aria-label="Línea de tiempo de aprendizajes">
+    <div class="year r1997">1997</div>
+
+    <button class="event context r1997" type="button" data-category="context" data-title="Reconocimiento legal del desplazamiento forzado" data-info="La Ley 387 de 1997 estableció un marco legal específico para reconocer y atender el desplazamiento forzado en Colombia.">
+      <span class="pill">Reconocimiento legal del desplazamiento forzado</span>
+      <span class="law">Ley 387 de 1997</span>
+    </button>
+
+    <button class="event solution r1997" type="button" data-category="solution" data-title="Apoyo al diseño del marco legal y política pública" data-info="Inicio del acompañamiento a la construcción de instrumentos legales y de política pública relacionados con la protección de la población desplazada.">
+      <span class="pill">Apoyo al diseño del marco legal y política pública</span>
+    </button>
+
+    <div class="year r2001">2001</div>
+
+    <button class="event solution r2001" type="button" data-category="solution" data-title="Decreto 2007 de 2001" data-info="Protección de las tierras abandonadas por la población desplazada o en riesgo, a través de un registro.">
+      <span class="pill">Decreto 2007 del 2001</span>
+      <div class="detail">Protección de las tierras abandonadas por la población desplazada o en riesgo, a través de un registro.</div>
+    </button>
+
+    <div class="year r2002">2002</div>
+
+    <button class="event context r2002" type="button" data-category="context" data-title="Escalada del desplazamiento" data-info="El aumento del desplazamiento forzado profundizó la necesidad de respuestas institucionales y de mecanismos de protección territorial.">
+      <span class="pill">Escalada del desplazamiento</span>
+    </button>
+
+    <div class="year r2004">2004</div>
+
+    <button class="event context r2004" type="button" data-category="context" data-title="Estado de cosas inconstitucional" data-info="La Sentencia T-025 de 2004 reconoció un estado de cosas inconstitucional frente a la situación de la población desplazada.">
+      <span class="pill">Estado de cosas inconstitucional</span>
+      <span class="law">Sentencia T-025 de 2004</span>
+    </button>
+
+    <div class="year r2007">2007</div>
+
+    <button class="event context r2007" type="button" data-category="context" data-title="Desmovilización paramilitar" data-info="La Ley 975 de 2005 abrió un marco de verdad, justicia y reparación en el contexto de la desmovilización paramilitar.">
+      <span class="pill">Desmovilización paramilitar</span>
+      <span class="law">Ley 975 de verdad, justicia y reparación</span>
+    </button>
+
+    <div class="year r2011">2011</div>
+
+    <button class="event context r2011" type="button" data-category="context" data-title="Reconocimiento de las víctimas del conflicto" data-info="La Ley 1448 de 2011 fortaleció el marco de reconocimiento, atención y reparación a las víctimas del conflicto armado.">
+      <span class="pill">Reconocimiento de las víctimas del conflicto</span>
+      <span class="law">Ley 1448 de 2011</span>
+    </button>
+
+    <button class="event solution r2011" type="button" data-category="solution" data-title="Transitional Solutions Initiative (TSI)" data-info="17 procesos de retorno, reubicación y legalización de asentamientos informales.">
+      <span class="pill">Transitional Solutions Initiative (TSI)</span>
+      <div class="detail">17 procesos de retorno, reubicación y legalización de asentamientos informales.</div>
+    </button>
+
+    <div class="year r2016">2016</div>
+
+    <button class="event context r2016" type="button" data-category="context" data-title="Acuerdo de paz con las FARC" data-info="El Acuerdo Final de 2016 transformó el marco institucional y territorial para la construcción de paz y la búsqueda de soluciones duraderas.">
+      <span class="pill">Acuerdo de paz con las FARC</span>
+    </button>
+
+    <button class="event solution r2016" type="button" data-category="solution" data-title="Creación de la Unidad de Restitución de Tierras" data-info="Identificación de la magnitud del despojo en el país, en asocio con Banco Mundial y la OIM.">
+      <span class="pill">Creación de la Unidad de Restitución de Tierras</span>
+      <div class="detail">Identificación de la magnitud del despojo en el país, en asocio con Banco Mundial y la OIM.</div>
+    </button>
+
+    <div class="year r2022">2022</div>
+
+    <button class="event solution r2022" type="button" data-category="solution" data-title="Proyecto Soluciones Prácticas en Tierras y Vivienda" data-info="39 procesos de legalización de asentamientos informales, reubicaciones rurales y saneamiento de resguardos indígenas, más de 50.000 personas beneficiadas.">
+      <span class="pill">Proyecto Soluciones Prácticas en Tierras y Vivienda</span>
+      <div class="detail">39 procesos de legalización de asentamientos informales, reubicaciones rurales y saneamiento de resguardos indígenas, más de 50.000 personas beneficiadas.</div>
+    </button>
+
+    <div class="year r2025">2025</div>
+
+    <button class="event context r2025" type="button" data-category="context" data-title="CONPES 4180 — Soluciones Duraderas" data-info="El CONPES 4180 consolida el enfoque de soluciones duraderas dentro de la respuesta institucional.">
+      <span class="pill">CONPES 4180<br>Soluciones Duraderas</span>
+    </button>
+
+    <button class="event solution r2025" type="button" data-category="solution" data-title="Legalización de asentamientos informales y retornos" data-info="Con apoyo de KOICA (2016–2020) y AECID desde 2021.">
+      <span class="pill">Legalización de asentamientos informales y retornos</span>
+      <div class="detail">Con apoyo de KOICA (2016–2020) y AECID desde 2021.</div>
+    </button>
+  </section>
+
+  <section class="info-panel" aria-live="polite">
+    <div>
+      <div class="info-kicker">Hito seleccionado</div>
+      <div class="info-title" id="infoTitle">Explora la línea de tiempo</div>
+    </div>
+    <div>
+      <p class="info-text" id="infoText">Selecciona cualquier hito para ver una breve explicación. También puedes filtrar entre contexto histórico y progresos en soluciones de tierras y vivienda.</p>
+      <div class="hint">Los eventos negros corresponden al contexto; los azules, a progresos en soluciones de tierras y vivienda.</div>
+    </div>
+  </section>
+</main>
+
+<script>
+(() => {
+  const app = document.querySelector('.timeline-app');
+  const events = [...app.querySelectorAll('.event')];
+  const filters = [...app.querySelectorAll('.filter')];
+  const title = app.querySelector('#infoTitle');
+  const text = app.querySelector('#infoText');
+
+  events.forEach(event => {
+    event.addEventListener('click', () => {
+      events.forEach(x => x.classList.remove('active'));
+      event.classList.add('active');
+      title.textContent = event.dataset.title || 'Hito';
+      text.textContent = event.dataset.info || '';
+    });
+  });
+
+  filters.forEach(button => {
+    button.addEventListener('click', () => {
+      const filter = button.dataset.filter;
+      filters.forEach(x => x.classList.toggle('active', x === button));
+      events.forEach(event => {
+        const show = filter === 'all' || event.dataset.category === filter;
+        event.classList.toggle('dimmed', !show);
+      });
+    });
+  });
+})();
+</script>
+</body>
+</html>
