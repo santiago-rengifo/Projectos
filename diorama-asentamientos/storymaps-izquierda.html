@@ -193,28 +193,28 @@
   }
 
 
-/* StoryMaps · ficha informativa a la IZQUIERDA (sobre el diorama) */
+/* StoryMaps · información a la DERECHA, sin ocultar los controles del diorama */
 #btnContexto {
-  left:14px !important;right:auto !important;top:76px;
+  left:auto !important;right:14px !important;top:76px;
   min-width:208px;min-height:62px;z-index:40;
   justify-content:flex-start;box-shadow:0 8px 25px #10283e55;
 }
-#btnContexto .ctx-icon {
-  width:43px;height:43px;font-size:30px;
-}
+#btnContexto .ctx-icon {width:43px;height:43px;font-size:30px;}
 #btnContexto .ctx-label {max-width:160px;font-size:13px;}
 #contexto {
-  left:14px !important;right:auto !important;top:150px;
+  left:auto !important;right:14px !important;top:150px;
   width:min(395px,calc(100vw - 28px));
-  max-height:calc(100dvh - 280px);
-  z-index:39;
+  max-height:calc(100dvh - 280px);z-index:39;
 }
-body.contexto-abierto #mini {left:auto !important;right:12px !important;}
+/* El selector histórico se coloca debajo del botón y se oculta al abrir la ficha. */
+#tiempo {top:151px;right:14px;}
+body.contexto-abierto #mini {left:12px !important;right:auto !important;}
 @media(max-width:640px){
-  #btnContexto{left:9px !important;right:auto !important;top:62px;min-width:0;min-height:52px;padding:6px 12px 6px 7px;}
+  #btnContexto{left:auto !important;right:9px !important;top:62px;min-width:0;min-height:52px;padding:6px 12px 6px 7px;}
   #btnContexto .ctx-icon{width:36px;height:36px;font-size:26px;}
   #btnContexto .ctx-label{max-width:125px;font-size:12px;}
-  #contexto{left:9px !important;right:auto !important;top:124px;width:calc(100vw - 18px);max-height:calc(100dvh - 251px);}
+  #contexto{left:auto !important;right:9px !important;top:124px;width:calc(100vw - 18px);max-height:calc(100dvh - 251px);}
+  #tiempo{top:auto;right:9px;bottom:150px;}
 }
 @media(max-height:530px){
   #btnContexto{top:50px;}
