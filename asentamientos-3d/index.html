@@ -82,7 +82,7 @@
  <div class="shell">
   <header class="top">
    <div class="brand"><div class="mark" aria-hidden="true">◈</div><div><h1>Asentamientos · Explorador 3D</h1><p class="subtitle">Coordenadas comparadas · Colombia · WGS84 (EPSG:4326)</p></div></div>
-   <div class="headmeta"><span class="chip" id="summaryPoints">12 puntos · 10 sitios</span><span class="chip" style="background:#e8eefe;color:#29486d">v4 · 3D inicial</span><span class="chip alert">Ubicaciones no certificadas</span></div>
+   <div class="headmeta"><span class="chip" id="summaryPoints">12 puntos · 10 sitios</span><span class="chip" style="background:#e8eefe;color:#29486d">v5 · 3D por defecto</span><span class="chip" id="actualMode" style="background:#e7f1e9;color:#246148">Preparando vista 3D…</span><span class="chip alert">Ubicaciones no certificadas</span></div>
   </header>
   <div class="workspace">
    <aside class="sidebar" id="sidebar" aria-label="Listado de puntos">
@@ -106,12 +106,12 @@
     <div class="controls">
      <div class="controlbox">
       <label class="ctl">Mapa <select id="basemap" aria-label="Mapa base"><option value="osm" selected>Cartográfico (calles y edificios)</option><option value="imagery">Satélite</option></select></label>
-      <label class="ctl" title="Modelo de edificios donde el servicio tenga datos"><input id="buildings" type="checkbox" checked /> Edificios 3D</label>
+      <label class="ctl" title="Edificios cartográficos 3D, según cobertura"><input id="buildings" type="checkbox" checked /> Edificios 3D</label><label class="ctl" title="Color sólido de los edificios 3D">Color <input id="buildingColor" type="color" value="#c8ae95" style="width:30px;height:25px;border:0;cursor:pointer;padding:0;background:transparent" aria-label="Color de edificios 3D"></label>
      </div>
      <div class="controlbox"><label class="ctl">Vista <select id="viewmode" aria-label="Tipo de vista"><option value="3d" selected>3D</option><option value="2d">2D</option></select></label><button type="button" class="ctl" id="topview" title="Vista desde arriba">↧ Cenital</button><button type="button" class="ctl" id="resetview" title="Restablecer vista del lugar">↻ Reiniciar</button></div>
     </div>
     <div id="notice" role="status"></div>
-    <div id="loading" role="status"><div class="loading-card"><span class="spinner" aria-hidden="true"></span><p>Abriendo vista 3D con edificios cartográficos (v4)…</p><small>Se requiere internet y WebGL habilitado.</small></div></div>
+    <div id="loading" role="status"><div class="loading-card"><span class="spinner" aria-hidden="true"></span><p>Abriendo vista 3D con edificios coloreados (v5)…</p><small>Se requiere internet y WebGL habilitado.</small></div></div>
     <section class="info" id="info" aria-live="polite" aria-label="Información del punto"></section>
     <div class="scene-help">🖱️ Arrastrar: mover · Clic derecho + arrastrar: girar · Rueda: acercar/alejar<br><strong>Los puntos no representan polígonos.</strong></div>
    </main>
@@ -131,7 +131,7 @@
   }));
   const byId = new Map(features.map(f=>[f.id,f]));
   const pairs = {nuevo:[9,10], aeropuerto:[11,12]};
-  let selectedId=10, activePair=null, filter="all", map, view, markerLayer, lineLayer, buildingsLayer=null, ready=false, focusMode="perspective", isLoadingBuildings=false, viewMode="3d";
+  let selectedId=10, activePair=null, filter="all", map, view, markerLayer, lineLayer, buildingsLayer=null, ready=false, focusMode="perspective", isLoadingBuildings=false, viewMode="3d", footprintLayer=null, footprintCache=new Map();
   const el = id=>document.getElementById(id);
   const esc = val => String(val??"").replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const deg=n=>Number(n).toFixed(6);
@@ -206,23 +206,104 @@
     if(move)flyToPoint(f);if(window.innerWidth<=620){el('sidebar').classList.remove('mobile-open');el('sidebarToggle').setAttribute('aria-expanded','false');}
   }
   function toggleCompare(key){activePair=(activePair===key?null:key);renderInfo();renderMarkers();updateComparison();setQuery();if(activePair)flyToPair(activePair);else flyToPoint(byId.get(selectedId));}
-  async function setBuildings(enabled){if(!ready)return;if(isLoadingBuildings)return;
-    if(!enabled){if(buildingsLayer)buildingsLayer.visible=false;return;}
-    if(buildingsLayer){buildingsLayer.visible=true;return;}
-    isLoadingBuildings=true;notify('Cargando edificios 3D, según cobertura disponible…');
-    try{
-    if(viewMode==='2d'){el('buildings').checked=false;notify('Los edificios requieren la vista 3D.');return;}
-    if(!SceneLayer)SceneLayer=await $arcgis.import('@arcgis/core/layers/SceneLayer.js');
-    const layer=new SceneLayer({portalItem:{id:'b8fec5af7dfe4866b1b8ac2d2800f282'},title:'Edificios 3D de contexto (Esri)'});
-    await layer.load();
-    // Tono cálido gris-piedra parecido a las huellas de edificaciones en un mapa 2D.
-    // Estilo de contexto: no representa el color real ni materiales de las fachadas.
-    layer.renderer={type:'simple',symbol:{type:'mesh-3d',symbolLayers:[{type:'fill',material:{color:'#d0c7bd'}}]}};
-    map.add(layer,0);buildingsLayer=layer;
-    notify('Edificios 3D activados en gris piedra (según cobertura Esri).');
+  // Uniforme sobre los modelos 3D: no se conservan texturas ni colores de fachadas.
+  function styleBuildings(layer) {
+    if(!layer || !layer.renderer && layer===footprintLayer)return;
+    const color=el('buildingColor').value;
+    if(layer===footprintLayer){
+      layer.graphics.forEach(g=>{
+        const height=Number(g.attributes.height)||8;
+        g.symbol={type:'polygon-3d',symbolLayers:[{type:'extrude',size:height,material:{color},edges:{type:'solid',color:'#806d5b',size:0.55}}]};
+      });
+      return;
+    }
+    layer.renderer={type:'simple',symbol:{
+      type:'mesh-3d',symbolLayers:[{type:'fill',material:{color,colorMixMode:'replace'},
+        edges:{type:'solid',color:'#8f7e6c',size:0.6}}]
+    }};
   }
-    catch(err){el('buildings').checked=false;notify('Los edificios 3D no están disponibles sin acceso autorizado o cobertura. El terreno 3D sigue activo.');console.warn(err);}
-    finally{isLoadingBuildings=false;}
+  // Si el servicio de Esri no está disponible, extruir huellas OSM cercanas
+  // y marcar explícitamente las alturas que no fueron medidas.
+  async function fallbackFootprints(f) {
+    const prior=footprintCache.get(f.id);
+    let elements=prior;
+    if(!elements){
+      const query='[out:json][timeout:18];way["building"](around:250,'+
+        f.lat.toFixed(6)+','+f.lon.toFixed(6)+');out geom;';
+      let lastError;
+      for(const endpoint of ['https://overpass.kumi.systems/api/interpreter','https://overpass-api.de/api/interpreter']){
+        try{
+          const ctrl=new AbortController(),t=setTimeout(()=>ctrl.abort(),13500);
+          let resp;
+          try{resp=await fetch(endpoint,{method:'POST',body:new URLSearchParams({data:query}),signal:ctrl.signal})}
+          finally{clearTimeout(t)}
+          if(!resp.ok)throw Error('Overpass: HTTP '+resp.status);
+          const json=await resp.json();
+          elements=(json.elements||[]).filter(x=>x.type==='way'&&x.geometry?.length>=4).slice(0,350);
+          footprintCache.set(f.id,elements);break;
+        }catch(e){lastError=e}
+      }
+      if(!elements)throw lastError||Error('Huellas OSM no disponibles');
+    }
+    if(!footprintLayer){
+      const GraphicsLayer=await $arcgis.import('@arcgis/core/layers/GraphicsLayer.js');
+      footprintLayer=new GraphicsLayer({title:'Volúmenes aproximados OSM',elevationInfo:{mode:'on-the-ground'}});
+      map.add(footprintLayer,0);
+    }
+    footprintLayer.removeAll();
+    const shade=el('buildingColor').value;
+    const graphics=[];
+    for(const way of elements){
+      const rings=way.geometry.map(p=>[p.lon,p.lat]);
+      if(rings.length<4)continue;
+      if(rings[0][0]!==rings.at(-1)[0]||rings[0][1]!==rings.at(-1)[1])rings.push(rings[0]);
+      const tags=way.tags||{}, actualHeight=parseFloat(String(tags.height||'').replace('m','').trim()),
+        levels=parseFloat(tags['building:levels']);
+      // Los valores faltantes son estimaciones visuales y NO alturas verificadas.
+      const height=Number.isFinite(actualHeight)&&actualHeight>0?Math.min(actualHeight,100):
+        Number.isFinite(levels)&&levels>0?Math.min(levels*3,100):8;
+      graphics.push(new Graphic({
+        geometry:{type:'polygon',rings:[rings],spatialReference:{wkid:4326}},
+        attributes:{height,building_id:way.id,estimated_height:!(Number.isFinite(actualHeight)&&actualHeight>0)},
+        symbol:{type:'polygon-3d',symbolLayers:[{type:'extrude',size:height,
+          material:{color:shade},edges:{type:'solid',color:'#806d5b',size:0.55}}]}
+      }));
+    }
+    footprintLayer.addMany(graphics);
+    footprintLayer.visible=true;
+    return graphics.length;
+  }
+  async function setBuildings(enabled){
+    if(!ready||isLoadingBuildings)return;
+    if(!enabled){
+      if(buildingsLayer)buildingsLayer.visible=false;
+      if(footprintLayer)footprintLayer.visible=false;
+      return;
+    }
+    if(viewMode!=='3d'){el('buildings').checked=false;notify('Los edificios requieren la vista 3D.');return}
+    if(buildingsLayer){buildingsLayer.visible=true;styleBuildings(buildingsLayer);return}
+    if(footprintLayer&&footprintLayer.visible){return}
+    isLoadingBuildings=true;
+    try{
+      notify('Cargando edificios 3D con color ocre…');
+      if(!SceneLayer)SceneLayer=await $arcgis.import('@arcgis/core/layers/SceneLayer.js');
+      const layer=new SceneLayer({portalItem:{id:'b8fec5af7dfe4866b1b8ac2d2800f282'},
+        title:'Edificios 3D Esri · color cartográfico'});
+      // Forzar reemplazo de texturas para que el color sea visible.
+      styleBuildings(layer);
+      await layer.load();
+      if(!el('buildings').checked)return;
+      map.add(layer,0);
+      buildingsLayer=layer;
+      notify('Edificios 3D activados: ocre, con contornos. Cobertura dependiente de Esri.');
+    }catch(err){
+      console.warn('No se cargó el servicio 3D Esri, intentando OSM:',err);
+      try{
+        const count=await fallbackFootprints(byId.get(selectedId));
+        notify(count?count+' edificios OSM en 3D con altura aproximada cuando falte el dato.':
+          'Sin huellas de edificios OSM en este entorno; el relieve 3D sigue activo.');
+      }catch(e){console.warn('Sin huellas OSM:',e);notify('Sin edificios disponibles aquí. Se mantiene el mapa 3D con relieve.')}
+    }finally{isLoadingBuildings=false}
   }
   function initializeUI(){
     el('summaryPoints').textContent=`${features.length} puntos · ${new Set(features.map(f=>f.name+'|'+f.city)).size} sitios`;
@@ -230,6 +311,10 @@
     document.querySelectorAll('[data-filter]').forEach(btn=>btn.addEventListener('click',()=>{filter=btn.dataset.filter;document.querySelectorAll('[data-filter]').forEach(b=>b.classList.toggle('active',b===btn));renderList()}));
     el('basemap').onchange=event=>{if(!ready)return;map.basemap=(event.target.value==='osm'?'osm':imageryBasemap);};
     el('buildings').onchange=event=>setBuildings(event.target.checked);
+    el('buildingColor').onchange=()=>{
+      if(buildingsLayer)styleBuildings(buildingsLayer);
+      if(footprintLayer)styleBuildings(footprintLayer);
+    };
     el('viewmode').onchange=event=>{
       const url=new URL(window.location.href);
       if(event.target.value==='2d')url.searchParams.set('vista','2d');
@@ -253,10 +338,14 @@
   }
   async function activate(instance,mode){
     view=instance;await view.when();viewMode=mode;ready=true;el('viewmode').value=mode;
+    const modeLabel=el('actualMode');
+    modeLabel.textContent=mode==='3d'?'3D activo':'2D de respaldo';
+    modeLabel.style.background=mode==='3d'?'#e7f1e9':'#fff1d9';
+    modeLabel.style.color=mode==='3d'?'#246148':'#8b5c15';
     try{renderMarkers();updateComparison()}catch(markerError){console.warn('No se dibujaron algunos puntos:',markerError)}
     view.on('click',async evt=>{try{const hit=await view.hitTest(evt,{include:[markerLayer]});const point=hit.results.find(r=>r.graphic?.attributes?.id);if(point)selectPoint(point.graphic.attributes.id,false)}catch(e){console.warn('Identificación:',e)}});
     el('loading').style.opacity='0';setTimeout(()=>{el('loading').style.display='none'},300);
-    if(mode==='2d'){el('buildings').checked=false;el('buildings').disabled=true;el('topview').disabled=true;el('topview').title='Inclinación no disponible en modo 2D';}
+    if(mode==='2d'){el('buildings').checked=false;el('buildings').disabled=true;el('buildingColor').disabled=true;el('topview').disabled=true;el('topview').title='Inclinación no disponible en modo 2D';}
     if(activePair)await flyToPair(activePair);else await flyToPoint(byId.get(selectedId));
     if(mode==='3d' && el('buildings').checked)void setBuildings(true);
   }
