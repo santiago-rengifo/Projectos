@@ -339,8 +339,11 @@ const controls = new OrbitControls(camera, renderer.domElement);
 controls.enableDamping = true;
 controls.dampingFactor = 0.08;
 controls.enablePan = false;
-controls.minDistance = RADIO * 0.7;
-controls.maxDistance = RADIO * 12;
+// La rueda y el gesto de pellizcar deben acercar gradualmente, sin saltos fuertes.
+controls.zoomSpeed = 0.35; // valor de three.js por defecto: 1
+// Los límites de distancia se fijan respecto al encuadre inicial y al tamaño del embed.
+controls.minDistance = RADIO * 1.1;
+controls.maxDistance = RADIO * 10;
 controls.maxPolarAngle = Math.PI * 0.62;
 controls.autoRotate = P.get('rotar') !== '0';
 controls.autoRotateSpeed = 0.6;
@@ -381,12 +384,20 @@ function redimensionar() {
     const prev = factorEncuadre; factorEncuadre = nuevo;
     if (camera.position.lengthSq() > 0) camera.position.multiplyScalar(nuevo / prev);
   }
+  ajustarLimitesZoom();
 }
 var factorEncuadre = 1;
+// Margen de exploración moderado respecto al tamaño del diorama.
+function ajustarLimitesZoom() {
+  const distanciaInicial = RADIO * 2.9 * factorEncuadre / CAM_ZOOM;
+  controls.minDistance = Math.max(RADIO * 0.95, distanciaInicial * 0.65);
+  controls.maxDistance = Math.max(RADIO * 3.5, distanciaInicial * 1.9);
+}
 window.addEventListener('resize', redimensionar);
 redimensionar();
 
 function vistaInicial() {
+  ajustarLimitesZoom();
   const d = RADIO * 2.9 * factorEncuadre / CAM_ZOOM, a = CAM_EL * Math.PI / 180, az = CAM_AZ * Math.PI / 180;
   camera.position.set(d * Math.cos(a) * -Math.sin(az), d * Math.sin(a), d * Math.cos(a) * Math.cos(az));
   controls.target.set(0, 0, 0);
