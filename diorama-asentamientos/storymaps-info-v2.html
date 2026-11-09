@@ -1,0 +1,1199 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Diorama 3D de asentamientos · Ficha lateral StoryMaps</title>
+<style>
+  html, body { margin: 0; height: 100%; overflow: hidden; }
+  body {
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+    color: #1f2933;
+    background: radial-gradient(ellipse at 50% 35%, #ffffff 0%, #eef1f4 55%, #dde3e9 100%);
+  }
+  body.bg-transparent { background: transparent; }
+  #app { position: fixed; inset: 0; }
+  #app canvas { display: block; touch-action: none; }
+
+  #cabecera {
+    position: absolute; top: 0; left: 0; right: 0; padding: 10px 12px 8px;
+    text-align: center; pointer-events: none;
+    background: linear-gradient(to bottom, rgba(255,255,255,.92) 0%, rgba(255,255,255,.75) 75%, rgba(255,255,255,0) 100%);
+  }
+  #cabecera > * { max-width: 760px; margin-left: auto; margin-right: auto; }
+  body.bg-transparent #cabecera { background: none; }
+  #cabecera h1 { font-size: 22px; margin: 0 auto; line-height: 1.2; text-shadow: 0 1px 2px rgba(255,255,255,.9); }
+  #cabecera .sub { color: #3e4c59; font-size: 13px; margin-top: 2px; text-shadow: 0 1px 2px rgba(255,255,255,.9); }
+  #cabecera .meta { color: #52606d; font-size: 11px; margin-top: 3px; text-shadow: 0 1px 2px rgba(255,255,255,.9); }
+  #cabecera #chips { margin-top: 1px; }
+  #cabecera .chip { margin: 4px 2px 0; }
+
+  #galeria {
+    position: absolute; left: 0; right: 0; bottom: 0; display: flex; gap: 10px;
+    overflow-x: auto; padding: 8px 14px 24px;
+    background: rgba(255,255,255,.82); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+    border-top: 1px solid rgba(15,23,42,.08); scroll-snap-type: x proximity; justify-content: safe center;
+    scrollbar-width: thin;
+  }
+  .tn {
+    flex: 0 0 auto; width: 92px; border: 0; background: transparent; cursor: pointer; padding: 4px 2px;
+    font: inherit; color: #1f2933; scroll-snap-align: center; border-radius: 10px; transition: background .15s;
+  }
+  .tn:hover { background: rgba(255,255,255,.6); }
+  .tn canvas {
+    width: 70px; height: 70px; border-radius: 50%; display: block; margin: 0 auto 4px;
+    background: #cfd6dd; box-shadow: 0 1px 4px rgba(0,0,0,.25); border: 3px solid #fff; box-sizing: content-box;
+  }
+  .tn.activo canvas { border-color: #d64545; }
+  .tn.activo span { font-weight: 700; }
+  .tn span {
+    display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+    font-size: 11px; line-height: 1.25; text-align: center;
+  }
+  .tn small { display: block; font-size: 10px; color: #616e7c; text-align: center; }
+
+  .panel {
+    position: absolute; top: 110px; left: 12px; max-width: 260px;
+    background: rgba(255,255,255,.93); border-radius: 10px; padding: 12px 14px;
+    box-shadow: 0 2px 12px rgba(15,23,42,.14); font-size: 13px; line-height: 1.4;
+  }
+  .panel .coords { font-variant-numeric: tabular-nums; color: #3e4c59; font-size: 12px; }
+  .panel .meta { color: #52606d; font-size: 12px; margin-top: 4px; }
+  .chip { display: inline-block; padding: 2px 8px; border-radius: 999px; font-size: 11px; font-weight: 600; margin: 6px 4px 0 0; }
+  .chip.warn { background: #fff4e0; color: #8a5300; border: 1px solid #f5c26b; }
+  .chip.bad { background: #fde8e8; color: #9b1c1c; border: 1px solid #f3a5a5; }
+  .chip.ok { background: #e6f6ec; color: #1e6b3a; border: 1px solid #9fd8b2; }
+  .obs { margin-top: 8px; font-size: 12px; color: #3e4c59; }
+  .obs summary { cursor: pointer; color: #1f5f99; }
+  .ctrl { margin-top: 10px; display: grid; gap: 8px; }
+  .ctrl label { font-size: 12px; color: #3e4c59; display: grid; gap: 3px; }
+  .ctrl select, .ctrl input[type=range] { width: 100%; }
+  .ctrl select { font: inherit; padding: 4px; border-radius: 6px; border: 1px solid #cbd2d9; background: #fff; }
+  .btns { display: flex; gap: 6px; flex-wrap: wrap; }
+  .btns button {
+    font: inherit; font-size: 12px; padding: 4px 9px; border-radius: 6px;
+    border: 1px solid #cbd2d9; background: #fff; cursor: pointer;
+  }
+  .btns button:hover { background: #f0f4f8; }
+
+  .attr {
+    position: absolute; right: 6px; bottom: 4px; font-size: 10px; color: #52606d;
+    background: rgba(255,255,255,.75); padding: 2px 6px; border-radius: 4px;
+  }
+  #carga {
+    position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+    pointer-events: none; font-size: 14px; color: #3e4c59;
+  }
+  #carga .caja { background: rgba(255,255,255,.92); padding: 10px 16px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,.1); }
+  #carga.oculto { display: none; }
+  #carga.error .caja { color: #9b1c1c; }
+  #toast {
+    position: absolute; left: 50%; bottom: 28px; transform: translateX(-50%);
+    background: #1f2933; color: #fff; font-size: 12px; padding: 6px 12px; border-radius: 6px;
+    opacity: 0; transition: opacity .25s; pointer-events: none;
+  }
+  #toast.visible { opacity: .92; }
+
+  #tiempo {
+    position: absolute; right: 12px; top: 110px; max-width: 210px;
+    background: rgba(255,255,255,.93); border-radius: 10px; padding: 8px 10px;
+    box-shadow: 0 2px 12px rgba(15,23,42,.14); font-size: 12px;
+  }
+  #tiempo .tit { font-weight: 600; color: #3e4c59; margin-bottom: 4px; }
+  #tiempo .anios { display: flex; flex-wrap: wrap; gap: 4px; }
+  #tiempo button {
+    font: inherit; font-size: 11px; padding: 2px 7px; border-radius: 999px; cursor: pointer;
+    border: 1px solid #cbd2d9; background: #fff; color: #1f2933;
+  }
+  #tiempo button.activo { background: #1f2933; color: #fff; border-color: #1f2933; }
+  #tiempo .nota { color: #616e7c; font-size: 10.5px; margin-top: 5px; line-height: 1.3; }
+  #tiempo.oculto { display: none; }
+  #mini { position: absolute; left: 12px; width: 92px; pointer-events: none; }
+  #mini svg { width: 100%; height: auto; display: block; filter: drop-shadow(0 1px 2px rgba(0,0,0,.18)); }
+
+  body.ui-min .panel, body.ui-galeria .panel, body.ui-none .panel,
+  body.ui-min #galeria, body.ui-none #galeria, body.ui-none #cabecera,
+  body.sin-galeria #galeria { display: none; }
+  body.ui-none #tiempo, body.ui-none #mini, body.sin-tiempo #tiempo, body.sin-mini #mini { display: none; }
+  @media (max-width: 640px) {
+    #cabecera h1 { font-size: 17px; }
+    .panel { display: none; }
+    #tiempo { top: auto; bottom: 150px; right: 8px; max-width: 160px; }
+    #mini { width: 64px; }
+    .tn { width: 78px; } .tn canvas { width: 58px; height: 58px; }
+  }
+
+  /* Fichas narrativas con atribución: accesorias al diorama y aptas para iframe. */
+  #btnContexto { position:absolute;top:72px;right:12px;z-index:24; border:1px solid #d6e1e8;
+    border-radius:999px;background:#183a52;color:white;padding:9px 14px;font:600 12px system-ui;
+    box-shadow:0 5px 18px #132c3a29;cursor:pointer; }
+  #btnContexto:hover,#btnContexto[aria-expanded="true"]{background:#0e6b88}
+  #contexto {position:absolute;right:12px;top:116px;width:min(375px,calc(100vw - 24px));max-height:calc(100vh - 290px);
+    z-index:23;overflow:auto;background:rgba(255,255,255,.97);box-shadow:0 15px 40px #142f4040;
+    border:1px solid #dbe4ec;border-radius:14px;padding:17px 19px;color:#253746;font-size:12px;line-height:1.55;}
+  #contexto[hidden]{display:none!important}
+  .ctx-tag{font-size:10px;text-transform:uppercase;letter-spacing:.7px;color:#647689;font-weight:750;margin:0 0 7px}
+  #contexto h2{font-size:17px;line-height:1.25;margin:0 20px 9px 0;color:#12364e}
+  .ctx-body{margin:0 0 14px;line-height:1.65;font-size:12px}
+  .ctx-h{font-size:11px;letter-spacing:.6px;text-transform:uppercase;color:#637589;margin:14px 0 8px;font-weight:800}
+  .ctx-metrics{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+  .ctx-metric{background:#f3f7fa;border:1px solid #e0e9ef;padding:9px;border-radius:9px}
+  .ctx-metric strong{display:block;font-size:15px;line-height:1.3;color:#143e5a}
+  .ctx-metric span{font-size:10px;color:#62778a}
+  .ctx-timeline{list-style:none;margin:0;padding:0 0 0 12px;border-left:2px solid #b2c9d7}
+  .ctx-timeline li{margin:0 0 10px 0;padding-left:8px}
+  .ctx-timeline b{display:block;color:#135b78}
+  .ctx-warning{padding:10px;background:#fff7ea;border-left:3px solid #d4933a;border-radius:7px;color:#70532b;font-size:11px;line-height:1.5;margin-top:12px}
+  .ctx-sources{margin:0;padding-left:18px}
+  .ctx-sources li{margin:5px 0}
+  .ctx-sources a{color:#075c8b;text-decoration:underline;overflow-wrap:anywhere}
+  .ctx-note{margin-top:12px;font-size:10px;color:#687b89}
+  .ctx-variant{display:block;width:100%;font:600 11px system-ui;margin-top:10px;padding:8px;border:1px solid #a8cadc;background:#eff8fc;border-radius:8px;color:#155b7a;cursor:pointer}
+  body.contexto-abierto #tiempo{display:none}
+  body.ui-none #btnContexto,body.ui-none #contexto{display:none!important}
+  @media(max-width:640px){#btnContexto{top:57px;right:8px;padding:8px 11px;font-size:11px}
+    #contexto{top:97px;right:8px;max-height:calc(100vh - 265px);width:calc(100vw - 16px);padding:13px 14px}
+    .ctx-metric strong{font-size:13px}}
+
+  /* VISTA STORYMAPS: ficha a la derecha y símbolo de información destacado */
+  #btnContexto{
+    right:16px;top:79px;display:inline-flex;align-items:center;gap:11px;
+    min-height:56px;padding:9px 16px 9px 10px;border-radius:15px;
+    background:#123e58;color:white;box-shadow:0 8px 24px #0a24394f;
+    font:750 13px/1.25 system-ui,-apple-system,"Segoe UI",sans-serif;
+    text-align:left;border:1px solid #12516a;
+  }
+  #btnContexto:hover,#btnContexto[aria-expanded="true"]{background:#075f80}
+  #btnContexto:focus-visible{outline:3px solid #f3bd54;outline-offset:3px}
+  #btnContexto .ctx-icon{
+    width:37px;height:37px;flex:none;display:grid;place-items:center;
+    border-radius:50%;background:#ffffff28;border:1px solid #ffffff80;
+    font:700 27px/1 Georgia,serif;
+  }
+  #btnContexto .ctx-label{max-width:140px}
+  #contexto{
+    right:16px;top:148px;width:min(410px,calc(100vw - 32px));
+    max-height:calc(100dvh - 280px);
+    overflow-y:auto;overscroll-behavior:contain;
+    border:1px solid #c9dce8;background:rgba(255,255,255,.985);
+    border-radius:15px;box-shadow:0 18px 50px #12354955;
+    padding:19px 21px 22px;
+  }
+  #contexto h2{font-size:18px}
+  @media(max-width:640px){
+    #btnContexto{right:9px;top:60px;min-height:49px;padding:7px 10px;gap:8px;font-size:12px}
+    #btnContexto .ctx-icon{width:33px;height:33px;font-size:24px}
+    #btnContexto .ctx-label{max-width:114px}
+    #contexto{top:118px;right:9px;width:min(370px,calc(100vw - 18px));
+      max-height:calc(100dvh - 244px);padding:15px 16px;}
+  }
+  @media(max-height:510px){
+    #btnContexto{top:54px}
+    #contexto{top:115px;max-height:calc(100dvh - 182px)}
+  }
+
+</style>
+<script type="importmap">
+{ "imports": {
+  "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+} }
+</script>
+</head>
+<body>
+<div id="app"></div>
+
+<div id="cabecera">
+  <h1 id="titulo">Cargando…</h1>
+  <div class="sub" id="sub"></div>
+  <div id="chips"></div>
+  <div class="meta" id="meta"></div>
+</div>
+
+<div id="galeria" role="list" aria-label="Sitios"></div>
+
+<div class="panel" id="panel">
+  <div class="coords" id="coords"></div>
+  <details class="obs solo-full" id="obsBox"><summary>Observación de control de calidad</summary><div id="obs"></div></details>
+  <div class="ctrl solo-full">
+    <label>Exageración vertical: <span id="exagVal"></span>
+      <input type="range" id="exag" min="1" max="5" step="0.5">
+    </label>
+    <label style="display:flex;align-items:center;gap:6px"><input type="checkbox" id="chkEdif"> Edificios 3D</label>
+    <label>Altura de edificios: <span id="fEdifVal"></span>
+      <input type="range" id="fEdif" min="1" max="5" step="0.5">
+    </label>
+    <div class="btns">
+      <button id="btnVista" type="button">Restablecer vista</button>
+      <button id="btnRotar" type="button">Pausar giro</button>
+      <button id="btnCopiar" type="button">Copiar URL para StoryMap</button>
+    </div>
+  </div>
+</div>
+
+
+<button id="btnContexto" type="button" aria-controls="contexto" aria-expanded="false" aria-label="Abrir información del asentamiento"><span class="ctx-icon" aria-hidden="true">ⓘ</span><span class="ctx-label">Información del asentamiento</span></button>
+<aside id="contexto" hidden aria-label="Ficha informativa contextual del lugar" aria-live="polite"></aside>
+
+<div id="tiempo" class="oculto">
+  <div class="tit">Imagen satelital</div>
+  <div class="anios" id="anios"></div>
+  <div class="nota" id="notaTiempo"></div>
+</div>
+<div id="mini" aria-hidden="true"></div>
+
+<div id="carga"><div class="caja" id="cargaTxt">Descargando relieve e imagen…</div></div>
+<div id="toast"></div>
+<div class="attr">Imagen: Esri, Maxar, Earthstar Geographics · Elevación: AWS Terrain Tiles (Mapzen) · Edificios: Overture Maps Foundation (ODbL) · three.js</div>
+
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
+
+/* ---------- Datos (Puntos_asentamientos_comparacion_ArcGIS.csv) ---------- */
+const DATOS = [{"nombre": "Granizal", "municipio": "Bello", "departamento": "Antioquia", "variante": "Excel original", "lat": 6.30317, "lon": -75.53327, "tipo": "Punto original referencial", "qa": "Verificar límite", "apto": "No", "obs": "El nombre figura en OSM/Copacabana; Granizal como asentamiento/vereda pertenece a Bello. Revisar polígono municipal y sector exacto antes de publicar."}, {"nombre": "Resguardo Yanacona Yachay Wasi", "municipio": "Mocoa", "departamento": "Putumayo", "variante": "Excel original", "lat": 1.18029, "lon": -76.63538, "tipo": "Punto original referencial", "qa": "Referencial", "apto": "No", "obs": "Medio Afán es un caserío. Se confirma asociación territorial pero no que el punto corresponda al resguardo (compuesto por predios)."}, {"nombre": "Resguardo Yanacona Villa María de Anamú", "municipio": "Mocoa", "departamento": "Putumayo", "variante": "Excel original", "lat": 1.19487, "lon": -76.62956, "tipo": "Punto original referencial", "qa": "Entidad distinta", "apto": "No", "obs": "Es un resguardo diferente, NO una alternativa intercambiable de Yachay Wasi. El punto representa la aldea Anamú."}, {"nombre": "Cúcuta (asentamiento sin especificar)", "municipio": "Cúcuta", "departamento": "Norte de Santander", "variante": "Excel original", "lat": 7.89715, "lon": -72.50804, "tipo": "Punto original referencial", "qa": "No utilizar como asentamiento", "apto": "No", "obs": "Solo representa centroide urbano; falta identificar asentamiento."}, {"nombre": "Bajamar: Alberto Lleras Camargo", "municipio": "Buenaventura", "departamento": "Valle del Cauca", "variante": "Excel original", "lat": 3.87509, "lon": -77.06142, "tipo": "Punto original referencial", "qa": "Referencial", "apto": "No", "obs": "Ubicación del barrio cartográfico OSM, no coordenada levantada de un asentamiento o polígono de bajamar."}, {"nombre": "Bajamar: Punta del Este", "municipio": "Buenaventura", "departamento": "Valle del Cauca", "variante": "Excel original", "lat": 3.88368, "lon": -77.05282, "tipo": "Punto original referencial", "qa": "Referencial", "apto": "No", "obs": "Ubicación del barrio cartográfico OSM, no coordenada levantada de un asentamiento o polígono de bajamar."}, {"nombre": "Bajamar: La Playita", "municipio": "Buenaventura", "departamento": "Valle del Cauca", "variante": "Excel original", "lat": 3.8776, "lon": -77.06669, "tipo": "Punto original referencial", "qa": "Referencial", "apto": "No", "obs": "Ubicación del barrio cartográfico OSM, no coordenada levantada de un asentamiento o polígono de bajamar."}, {"nombre": "Cabildo Siona Mame Ñata Umuguse (Nuevo Amanecer)", "municipio": "Puerto Asís", "departamento": "Putumayo", "variante": "Excel original", "lat": 0.48395, "lon": -76.48343, "tipo": "Punto original referencial", "qa": "Conflicto de ubicación", "apto": "No", "obs": "CSV está a 2,286 km del punto escolar del Excel. Fuentes sitúan el cabildo históricamente en Villa Docente. Se requiere georreferencia de campo."}, {"nombre": "Cabildo Siona Mame Ñata Umuguse (Nuevo Amanecer)", "municipio": "Puerto Asís", "departamento": "Putumayo", "variante": "CSV aportado", "lat": 0.4987812531042517, "lon": -76.49766860943132, "tipo": "Candidato sin validación de campo", "qa": "Conflicto de ubicación", "apto": "No", "obs": "CSV está a 2,286 km del punto escolar del Excel. Fuentes sitúan el cabildo históricamente en Villa Docente. Se requiere georreferencia de campo."}, {"nombre": "Antiguo Aeropuerto", "municipio": "Uribia", "departamento": "La Guajira", "variante": "CSV aportado", "lat": 11.713694949690034, "lon": -72.27205004491454, "tipo": "Candidato sin validación de campo", "qa": "Conflicto de ubicación", "apto": "No", "obs": "Municipio correcto Uribia, La Guajira. CSV a 1,652 km del punto del barrio El Aeropuerto OSM. Confirmar ubicación y sector dentro de Flor del Campo."}, {"nombre": "Antiguo Aeropuerto", "municipio": "Uribia", "departamento": "La Guajira", "variante": "OSM barrio El Aeropuerto", "lat": 11.69939, "lon": -72.27616, "tipo": "Referencia de barrio, no de todo el asentamiento", "qa": "Conflicto de ubicación", "apto": "No", "obs": "Municipio correcto Uribia, La Guajira. CSV a 1,652 km del punto del barrio El Aeropuerto OSM. Confirmar ubicación y sector dentro de Flor del Campo."}];
+
+/* ---------- Parámetros de URL ----------
+   sitio=N     número del sitio (1 a N, en el orden del CSV)
+   lat, lon    coordenadas libres (anulan "sitio"); nombre=... opcional
+   r=500       radio en metros (100 a 3000)
+   exag=1.5    exageración vertical (1 a 5)
+   ui=full     título, galería de miniaturas y panel de controles
+   ui=galeria  título y galería (sin panel)
+   ui=min      solo título
+   ui=none     solo el diorama
+   rotar=0     desactiva el giro automático
+   bg=transparent | hex sin # (p. ej. ffffff)
+   zimg=17     zoom de la imagen satelital (14 a 18)
+   edif=0      oculta los edificios
+   fedif=3     factor de altura de los edificios (1 a 5)
+   hdef=3.5    altura asumida (m) para edificios sin dato de altura ni pisos
+   ecolor=gris edificios en gris claro en vez del color de la imagen
+   fecha=2019  abre con la imagen histórica (Esri Wayback) más cercana a ese año
+   tiempo=0|1  oculta o muestra el selector de fechas (por defecto visible salvo en ui=min)
+   mapa=0      oculta el mapa de ubicación
+   curvas=0    quita las curvas de nivel
+   az=0        dirección desde la que se mira, en grados (0 = desde el sur, 90 = desde el oeste)
+   el=36       inclinación de la cámara en grados (10 a 85)
+   zoom=1      acercamiento (0.5 a 3)
+------------------------------------------ */
+const P = new URLSearchParams(location.search);
+const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
+const num = (k, d) => { const v = parseFloat(P.get(k)); return Number.isFinite(v) ? v : d; };
+
+const RADIO = clamp(num('r', 500), 100, 3000);
+let exag = clamp(num('exag', 1.5), 1, 5);
+const UI = (P.get('ui') || 'full').toLowerCase();
+const Z_IMG = clamp(Math.round(num('zimg', RADIO > 1200 ? 16 : 17)), 14, 18);
+const Z_DEM = RADIO > 1500 ? 14 : 15;
+const NR = 140, NS = 360;            // anillos y segmentos de la malla polar
+const PROF_BASE = RADIO * 0.16;      // grosor del "corte de suelo" bajo el punto más bajo
+let verEdif = P.get('edif') !== '0';
+let fEdif = clamp(num('fedif', 3), 1, 5);
+const H_DEF = clamp(num('hdef', 3.5), 2, 20);
+const M_PISO = 3.0;
+const COLOR_EDIF = (P.get('ecolor') || 'img').toLowerCase();   // img | gris
+const VER_CURVAS = P.get('curvas') !== '0';
+const CAM_AZ = num('az', 0), CAM_EL = clamp(num('el', 36), 10, 85), CAM_ZOOM = clamp(num('zoom', 1), 0.5, 3);
+const FECHA_INI = P.get('fecha');
+if (P.get('tiempo') === '0' || (UI === 'min' && P.get('tiempo') !== '1')) document.body.classList.add('sin-tiempo');
+if (P.get('mapa') === '0') document.body.classList.add('sin-mini');
+// luz de media mañana (aproximada): sol desde el este-sureste, 48° de altura
+const SOL_AZ = 115 * Math.PI / 180, SOL_EL = 48 * Math.PI / 180;
+
+document.body.classList.add('ui-' + UI);
+const bg = (P.get('bg') || '').toLowerCase();
+if (bg === 'transparent') document.body.classList.add('bg-transparent');
+else if (/^[0-9a-f]{6}$/.test(bg)) document.body.style.background = '#' + bg;
+
+/* ---------- Lista de sitios ---------- */
+const nombres = DATOS.map(d => d.nombre);
+const SITIOS = DATOS.map(d => ({
+  ...d,
+  etiqueta: nombres.filter(n => n === d.nombre).length > 1 ? `${d.nombre} (${d.variante})` : d.nombre
+}));
+
+let sitioIdx = clamp(Math.round(num('sitio', 1)) - 1, 0, SITIOS.length - 1);
+let sitioLibre = null;
+if (Number.isFinite(parseFloat(P.get('lat'))) && Number.isFinite(parseFloat(P.get('lon')))) {
+  sitioLibre = {
+    nombre: P.get('nombre') || 'Sitio', etiqueta: P.get('nombre') || 'Sitio',
+    municipio: '', departamento: '', variante: '', lat: parseFloat(P.get('lat')), lon: parseFloat(P.get('lon')),
+    qa: '', apto: '', obs: '', tipo: ''
+  };
+}
+
+/* ---------- Utilidades geográficas (Web Mercator) ---------- */
+const lon2px = (lon, z) => (lon + 180) / 360 * 256 * 2 ** z;
+const lat2px = (lat, z) => {
+  const s = Math.sin(lat * Math.PI / 180);
+  return (0.5 - Math.log((1 + s) / (1 - s)) / (4 * Math.PI)) * 256 * 2 ** z;
+};
+
+function cargarImg(url) {
+  return new Promise((res, rej) => {
+    const im = new Image();
+    im.crossOrigin = 'anonymous';
+    im.onload = () => res(im);
+    im.onerror = () => rej(new Error('No cargó ' + url));
+    im.src = url;
+  });
+}
+
+async function mosaico(lat, lon, R, z, urlFn, leer) {
+  const dLat = R / 111320 * 1.08;
+  const dLon = R / (111320 * Math.cos(lat * Math.PI / 180)) * 1.08;
+  const x0 = lon2px(lon - dLon, z), x1 = lon2px(lon + dLon, z);
+  const y0 = lat2px(lat + dLat, z), y1 = lat2px(lat - dLat, z);
+  const tx0 = Math.floor(x0 / 256), tx1 = Math.floor(x1 / 256);
+  const ty0 = Math.floor(y0 / 256), ty1 = Math.floor(y1 / 256);
+  const W = (tx1 - tx0 + 1) * 256, H = (ty1 - ty0 + 1) * 256;
+  const cv = document.createElement('canvas');
+  cv.width = W; cv.height = H;
+  const ctx = cv.getContext('2d', { willReadFrequently: !!leer });
+  const trabajos = [];
+  for (let tx = tx0; tx <= tx1; tx++) for (let ty = ty0; ty <= ty1; ty++) {
+    trabajos.push(cargarImg(urlFn(z, tx, ty)).then(im => ctx.drawImage(im, (tx - tx0) * 256, (ty - ty0) * 256)));
+  }
+  const r = await Promise.allSettled(trabajos);
+  const fallos = r.filter(x => x.status === 'rejected').length;
+  if (fallos === trabajos.length) throw new Error('No se pudo descargar ninguna tesela (zoom ' + z + ').');
+  return { canvas: cv, ctx, oX: tx0 * 256, oY: ty0 * 256, W, H, z, fallos };
+}
+
+/* ---------- Escena ---------- */
+const app = document.getElementById('app');
+const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+app.appendChild(renderer.domElement);
+
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(35, 1, RADIO * 0.01, RADIO * 40);
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true;
+controls.dampingFactor = 0.08;
+controls.enablePan = false;
+// La rueda y el gesto de pellizcar deben acercar gradualmente, sin saltos fuertes.
+controls.zoomSpeed = 0.35; // valor de three.js por defecto: 1
+// Los límites de distancia se fijan respecto al encuadre inicial y al tamaño del embed.
+controls.minDistance = RADIO * 1.1;
+controls.maxDistance = RADIO * 10;
+controls.maxPolarAngle = Math.PI * 0.62;
+controls.autoRotate = P.get('rotar') !== '0';
+controls.autoRotateSpeed = 0.6;
+controls.addEventListener('start', () => { controls.autoRotate = false; actualizarBotonRotar(); });
+
+scene.add(new THREE.HemisphereLight(0xffffff, 0x7a6a58, 1.15));
+const sol = new THREE.DirectionalLight(0xfff4e6, 2.1);
+{
+  const dS = RADIO * 3;
+  sol.position.set(dS * Math.cos(SOL_EL) * Math.sin(SOL_AZ), dS * Math.sin(SOL_EL), -dS * Math.cos(SOL_EL) * Math.cos(SOL_AZ));
+  sol.castShadow = true;
+  sol.shadow.mapSize.set(2048, 2048);
+  const sc = sol.shadow.camera;
+  sc.left = sc.bottom = -RADIO * 1.3; sc.right = sc.top = RADIO * 1.3;
+  sc.near = RADIO * 0.5; sc.far = RADIO * 6;
+  sol.shadow.bias = -0.0006;
+  sol.shadow.normalBias = RADIO * 0.0015;
+  sol.shadow.radius = 3;
+}
+scene.add(sol);
+
+// centra el diorama en el espacio libre entre la cabecera y la galería
+function redimensionar() {
+  const w = app.clientWidth || window.innerWidth, h = app.clientHeight || window.innerHeight;
+  renderer.setSize(w, h);
+  camera.aspect = w / h;
+  const vis = el => el && el.offsetParent !== null ? el.getBoundingClientRect() : null;
+  const cab = vis(document.getElementById('cabecera')), gal = vis(document.getElementById('galeria'));
+  const arriba = cab ? cab.bottom : 0, abajo = gal ? h - gal.top : 0;
+  const dy = (abajo - arriba) / 2;
+  if (Math.abs(dy) > 1) camera.setViewOffset(w, h, 0, dy, w, h); else camera.clearViewOffset();
+  camera.updateProjectionMatrix();
+  // alejar la cámara en proporción al alto que ocupan cabecera y galería
+  const libre = Math.max(0.35, (h - arriba - abajo) / h);
+  const fAspecto = Math.max(1, 1.15 / Math.min(1.6, w / Math.max(1, h - arriba - abajo)));
+  const nuevo = 1 / libre * fAspecto;
+  if (Math.abs(nuevo - factorEncuadre) > 0.01) {
+    const prev = factorEncuadre; factorEncuadre = nuevo;
+    if (camera.position.lengthSq() > 0) camera.position.multiplyScalar(nuevo / prev);
+  }
+  ajustarLimitesZoom();
+}
+var factorEncuadre = 1;
+// Margen de exploración moderado respecto al tamaño del diorama.
+function ajustarLimitesZoom() {
+  const distanciaInicial = RADIO * 2.9 * factorEncuadre / CAM_ZOOM;
+  controls.minDistance = Math.max(RADIO * 0.95, distanciaInicial * 0.65);
+  controls.maxDistance = Math.max(RADIO * 3.5, distanciaInicial * 1.9);
+}
+window.addEventListener('resize', redimensionar);
+redimensionar();
+
+function vistaInicial() {
+  ajustarLimitesZoom();
+  const d = RADIO * 2.9 * factorEncuadre / CAM_ZOOM, a = CAM_EL * Math.PI / 180, az = CAM_AZ * Math.PI / 180;
+  camera.position.set(d * Math.cos(a) * -Math.sin(az), d * Math.sin(a), d * Math.cos(a) * Math.cos(az));
+  controls.target.set(0, 0, 0);
+  controls.update();
+}
+
+/* ---------- Curvas de nivel (inyectadas en el shader estándar) ---------- */
+const U_CURVAS = { uExag: { value: 1.5 }, uE0: { value: 0 }, uInt: { value: 10 } };
+function conCurvas(mat, fuerza, colorHex) {
+  if (!VER_CURVAS) return mat;
+  mat.onBeforeCompile = sh => {
+    Object.assign(sh.uniforms, U_CURVAS, { uFuerza: { value: fuerza }, uColorCurva: { value: new THREE.Color(colorHex) } });
+    sh.vertexShader = sh.vertexShader
+      .replace('#include <common>', '#include <common>\nvarying float vYMundo;')
+      .replace('#include <begin_vertex>', '#include <begin_vertex>\nvYMundo = (modelMatrix * vec4(transformed, 1.0)).y;');
+    sh.fragmentShader = sh.fragmentShader
+      .replace('#include <common>', '#include <common>\nvarying float vYMundo;\nuniform float uExag, uE0, uInt, uFuerza;\nuniform vec3 uColorCurva;')
+      .replace('#include <dithering_fragment>', `#include <dithering_fragment>
+        float elevM = vYMundo / uExag + uE0;
+        float f1 = elevM / uInt;
+        float l1 = 1.0 - smoothstep(0.0, fwidth(f1) * 1.1, abs(fract(f1 - 0.5) - 0.5));
+        float f5 = elevM / (uInt * 5.0);
+        float l5 = 1.0 - smoothstep(0.0, fwidth(f5) * 1.8, abs(fract(f5 - 0.5) - 0.5));
+        float aC = max(l1 * uFuerza, l5 * min(1.0, uFuerza * 1.7));
+        gl_FragColor.rgb = mix(gl_FragColor.rgb, uColorCurva, aC);`);
+  };
+  mat.customProgramCacheKey = () => 'curvas' + fuerza + colorHex;
+  return mat;
+}
+function intervaloCurvas(desnivel) {
+  return desnivel < 15 ? 1 : desnivel < 40 ? 2 : desnivel < 100 ? 5 : desnivel < 300 ? 10 : 25;
+}
+
+/* ---------- Texturas auxiliares ---------- */
+function texturaSombra() {
+  const c = document.createElement('canvas'); c.width = c.height = 256;
+  const g = c.getContext('2d');
+  const gr = g.createRadialGradient(128, 128, 20, 128, 128, 128);
+  gr.addColorStop(0, 'rgba(20,30,40,0.35)');
+  gr.addColorStop(0.55, 'rgba(20,30,40,0.18)');
+  gr.addColorStop(1, 'rgba(20,30,40,0)');
+  g.fillStyle = gr; g.fillRect(0, 0, 256, 256);
+  return new THREE.CanvasTexture(c);
+}
+
+function spriteTexto(txt, color) {
+  const c = document.createElement('canvas'); c.width = c.height = 128;
+  const g = c.getContext('2d');
+  g.fillStyle = 'rgba(255,255,255,0.9)';
+  g.beginPath(); g.arc(64, 64, 46, 0, Math.PI * 2); g.fill();
+  g.fillStyle = color; g.font = 'bold 64px system-ui, Arial'; g.textAlign = 'center'; g.textBaseline = 'middle';
+  g.fillText(txt, 64, 68);
+  const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace;
+  const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: t, depthTest: false }));
+  s.scale.set(RADIO * 0.13, RADIO * 0.13, 1);
+  s.renderOrder = 10;
+  return s;
+}
+
+/* ---------- Construcción del diorama ---------- */
+let grupo = null;
+let modelo = null;   // datos para recalcular con otra exageración
+
+function liberar(obj) {
+  obj.traverse(o => {
+    if (o.geometry) o.geometry.dispose();
+    if (o.material) {
+      const ms = Array.isArray(o.material) ? o.material : [o.material];
+      ms.forEach(m => { if (m.map) m.map.dispose(); m.dispose(); });
+    }
+  });
+}
+
+function construir(sitio, dem, img) {
+  const { lat, lon } = sitio;
+  const mLat = 111320, mLon = 111320 * Math.cos(lat * Math.PI / 180);
+  const d = dem.ctx.getImageData(0, 0, dem.W, dem.H).data;
+
+  const elevPx = (xx, yy) => { const i = (yy * dem.W + xx) * 4; return d[i] * 256 + d[i + 1] + d[i + 2] / 256 - 32768; };
+  function elev(px, py) {
+    let x = clamp(px - dem.oX - 0.5, 0, dem.W - 1.001);
+    let y = clamp(py - dem.oY - 0.5, 0, dem.H - 1.001);
+    const x0 = Math.floor(x), y0 = Math.floor(y), fx = x - x0, fy = y - y0;
+    const a = elevPx(x0, y0), b = elevPx(x0 + 1, y0), c = elevPx(x0, y0 + 1), e = elevPx(x0 + 1, y0 + 1);
+    // el mar (batimetría negativa) se deja a nivel 0 para no hundir zonas costeras
+    return Math.max(0, (a * (1 - fx) + b * fx) * (1 - fy) + (c * (1 - fx) + e * fx) * fy);
+  }
+
+  const nV = 1 + NR * NS;
+  const xs = new Float32Array(nV), zs = new Float32Array(nV), el = new Float32Array(nV);
+  const uv = new Float32Array(nV * 2);
+  function fijar(k, x, n) {
+    const la = lat + n / mLat, lo = lon + x / mLon;
+    el[k] = elev(lon2px(lo, Z_DEM), lat2px(la, Z_DEM));
+    uv[2 * k] = (lon2px(lo, Z_IMG) - img.oX) / img.W;
+    uv[2 * k + 1] = 1 - (lat2px(la, Z_IMG) - img.oY) / img.H;
+    xs[k] = x; zs[k] = -n;   // X = este, -Z = norte
+  }
+  fijar(0, 0, 0);
+  for (let i = 1; i <= NR; i++) {
+    const r = RADIO * i / NR;
+    for (let j = 0; j < NS; j++) {
+      const t = 2 * Math.PI * j / NS;
+      fijar(1 + (i - 1) * NS + j, r * Math.cos(t), r * Math.sin(t));
+    }
+  }
+
+  // índices de la superficie
+  const idx = [];
+  const K = (i, j) => 1 + (i - 1) * NS + (j % NS);
+  for (let j = 0; j < NS; j++) idx.push(0, K(1, j), K(1, j + 1));
+  for (let i = 1; i < NR; i++) for (let j = 0; j < NS; j++) {
+    const a = K(i, j), b = K(i, j + 1), c = K(i + 1, j), e = K(i + 1, j + 1);
+    idx.push(a, c, e, a, e, b);
+  }
+  const geoSup = new THREE.BufferGeometry();
+  geoSup.setAttribute('position', new THREE.BufferAttribute(new Float32Array(nV * 3), 3));
+  geoSup.setAttribute('uv', new THREE.BufferAttribute(uv, 2));
+  geoSup.setIndex(idx);
+
+  const texImg = new THREE.CanvasTexture(img.canvas);
+  texImg.colorSpace = THREE.SRGBColorSpace;
+  texImg.anisotropy = renderer.capabilities.getMaxAnisotropy();
+  const sup = new THREE.Mesh(geoSup, conCurvas(new THREE.MeshStandardMaterial({ map: texImg, roughness: 1, metalness: 0 }), 0.28, 0xffffff));
+  sup.castShadow = true; sup.receiveShadow = true;
+
+  // pared lateral (corte de suelo)
+  const nW = (NS + 1) * 2;
+  const geoPar = new THREE.BufferGeometry();
+  const nrm = new Float32Array(nW * 3), uvP = new Float32Array(nW * 2);
+  const idxP = [];
+  for (let j = 0; j <= NS; j++) {
+    const t = 2 * Math.PI * j / NS, cx = Math.cos(t), cz = -Math.sin(t);
+    for (let s = 0; s < 2; s++) {
+      const v = 2 * j + s;
+      nrm[3 * v] = cx; nrm[3 * v + 1] = 0; nrm[3 * v + 2] = cz;
+      uvP[2 * v] = j / NS * 10; uvP[2 * v + 1] = s === 0 ? 1 : 0;
+    }
+    if (j < NS) idxP.push(2 * j, 2 * j + 1, 2 * j + 3, 2 * j, 2 * j + 3, 2 * j + 2);
+  }
+  geoPar.setAttribute('position', new THREE.BufferAttribute(new Float32Array(nW * 3), 3));
+  geoPar.setAttribute('normal', new THREE.BufferAttribute(nrm, 3));
+  geoPar.setAttribute('uv', new THREE.BufferAttribute(uvP, 2));
+  geoPar.setIndex(idxP);
+  // borde neutro con curvas de nivel (sin estratos inventados)
+  const par = new THREE.Mesh(geoPar, conCurvas(new THREE.MeshStandardMaterial({ color: 0xe3dccf, roughness: 1, metalness: 0 }), 0.42, 0x8c7b66));
+  par.castShadow = true; par.receiveShadow = true;
+
+  // tapa inferior
+  const geoBase = new THREE.CircleGeometry(RADIO, NS);
+  geoBase.rotateX(Math.PI / 2);
+  const base = new THREE.Mesh(geoBase, new THREE.MeshStandardMaterial({ color: 0xb9b0a1, roughness: 1 }));
+
+  // sombra suave
+  const sombra = new THREE.Mesh(
+    new THREE.PlaneGeometry(RADIO * 3.4, RADIO * 3.4).rotateX(-Math.PI / 2),
+    new THREE.MeshBasicMaterial({ map: texturaSombra(), transparent: true, depthWrite: false })
+  );
+
+  // marcador del punto
+  const hPin = RADIO * 0.14;
+  const pin = new THREE.Group();
+  const palo = new THREE.Mesh(new THREE.CylinderGeometry(RADIO * 0.0045, RADIO * 0.0045, hPin, 12),
+    new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.6 }));
+  palo.position.y = hPin / 2;
+  const bola = new THREE.Mesh(new THREE.SphereGeometry(RADIO * 0.022, 24, 16),
+    new THREE.MeshStandardMaterial({ color: 0xd64545, roughness: 0.45 }));
+  bola.position.y = hPin;
+  pin.add(palo, bola);
+
+  // norte
+  const norte = spriteTexto('N', '#1f2933');
+
+  grupo = new THREE.Group();
+  grupo.add(sup, par, base, sombra, pin, norte);
+  scene.add(grupo);
+
+  let eMin = Infinity, eMax = -Infinity;
+  for (let k = 0; k < nV; k++) { if (el[k] < eMin) eMin = el[k]; if (el[k] > eMax) eMax = el[k]; }
+  const elevLL = (la, lo) => elev(lon2px(lo, Z_DEM), lat2px(la, Z_DEM));
+  const imgPix = img.ctx.getImageData(0, 0, img.W, img.H).data;
+  // color promedio de la imagen satelital en un punto (ventana de 3x3 píxeles)
+  const colorLL = (la, lo) => {
+    const px = Math.round(lon2px(lo, Z_IMG) - img.oX), py = Math.round(lat2px(la, Z_IMG) - img.oY);
+    let r = 0, g = 0, b = 0, n = 0;
+    for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) {
+      const x = px + dx, y = py + dy;
+      if (x < 0 || y < 0 || x >= img.W || y >= img.H) continue;
+      const i = (y * img.W + x) * 4; r += imgPix[i]; g += imgPix[i + 1]; b += imgPix[i + 2]; n++;
+    }
+    return n ? [r / n, g / n, b / n, n] : [200, 200, 200, 1];
+  };
+  modelo = { xs, zs, el, nV, geoSup, geoPar, base, sombra, norte, eMin, eMax, e0: el[0], elevLL, colorLL, lat, lon, mLat, mLon, edif: null, mallaEdif: null,
+    sup, img, texImg, wayback: null };
+  U_CURVAS.uE0.value = el[0];
+  U_CURVAS.uInt.value = intervaloCurvas(eMax - eMin);
+  aplicarExag();
+  actualizarMeta(sitio);
+}
+
+function aplicarExag() {
+  if (!modelo) return;
+  const { xs, zs, el, nV, geoSup, geoPar, base, sombra, norte, eMin, e0 } = modelo;
+  const pos = geoSup.attributes.position.array;
+  let yMax = -Infinity;
+  for (let k = 0; k < nV; k++) {
+    const y = (el[k] - e0) * exag;
+    pos[3 * k] = xs[k]; pos[3 * k + 1] = y; pos[3 * k + 2] = zs[k];
+    if (y > yMax) yMax = y;
+  }
+  geoSup.attributes.position.needsUpdate = true;
+  geoSup.computeVertexNormals();
+  geoSup.computeBoundingSphere();
+
+  const yBase = (eMin - e0) * exag - PROF_BASE;
+  const pp = geoPar.attributes.position.array;
+  for (let j = 0; j <= NS; j++) {
+    const k = 1 + (NR - 1) * NS + (j % NS);
+    const vT = 2 * j, vB = 2 * j + 1;
+    pp[3 * vT] = xs[k]; pp[3 * vT + 1] = (el[k] - e0) * exag; pp[3 * vT + 2] = zs[k];
+    pp[3 * vB] = xs[k]; pp[3 * vB + 1] = yBase; pp[3 * vB + 2] = zs[k];
+  }
+  geoPar.attributes.position.needsUpdate = true;
+  geoPar.computeBoundingSphere();
+
+  base.position.y = yBase;
+  sombra.position.y = yBase - RADIO * 0.07;
+  norte.position.set(0, Math.max(0, yMax) * 0.5, -RADIO * 1.13);
+  controls.target.set(0, (yBase + Math.max(0, yMax)) * 0.25, 0);
+
+  document.getElementById('exagVal').textContent = '×' + exag.toFixed(1);
+  U_CURVAS.uExag.value = exag;
+  construirMallaEdif();
+  if (modelo.sitio) actualizarMeta(modelo.sitio);
+}
+
+/* ---------- Edificios (Overture Maps, PMTiles) ---------- */
+let libsEdif = null;
+async function cargarLibsEdif() {
+  if (!libsEdif) libsEdif = Promise.all([
+    import('https://cdn.jsdelivr.net/npm/pmtiles@3.2.1/+esm'),
+    import('https://cdn.jsdelivr.net/npm/@mapbox/vector-tile@2.0.3/+esm'),
+    import('https://cdn.jsdelivr.net/npm/pbf@4.0.1/+esm')
+  ]).then(([pm, vt, pbf]) => ({ PMTiles: pm.PMTiles, VectorTile: vt.VectorTile, Pbf: pbf.default }));
+  return libsEdif;
+}
+
+let archivoEdif = null;   // PMTiles de la versión más reciente de Overture
+async function abrirOverture(L) {
+  if (archivoEdif) return archivoEdif;
+  const base = 'https://overturemaps-extras-us-west-2.s3.us-west-2.amazonaws.com/tiles/';
+  let versiones = [];
+  try {
+    const cat = await (await fetch('https://stac.overturemaps.org/catalog.json')).json();
+    versiones = (cat.links || []).map(l => (l.href.match(/(\d{4}-\d{2}-\d{2}\.\d+)\/catalog\.json/) || [])[1]).filter(Boolean);
+    versiones = [...new Set(versiones)].sort().reverse();
+  } catch (e) { console.warn('Catálogo STAC no disponible', e); }
+  for (const v of versiones) {
+    try {
+      const pm = new L.PMTiles(base + v + '/buildings.pmtiles');
+      await pm.getHeader();
+      archivoEdif = { pm, version: v };
+      return archivoEdif;
+    } catch (e) { /* probar la siguiente versión */ }
+  }
+  throw new Error('No se encontró una versión vigente de Overture.');
+}
+
+function areaAnillo(r) {
+  let a = 0;
+  for (let i = 0, j = r.length - 1; i < r.length; j = i++) a += (r[j][0] + r[i][0]) * (r[j][1] - r[i][1]);
+  return a / 2;
+}
+
+async function cargarEdificios(sitio, mio) {
+  const L = await cargarLibsEdif();
+  const { pm, version } = await abrirOverture(L);
+  const z = 14;
+  const { lat, lon, mLat, mLon } = modelo;
+  const dLat = RADIO / mLat, dLon = RADIO / mLon;
+  const n = 2 ** z;
+  const tx0 = Math.floor(lon2px(lon - dLon, z) / 256), tx1 = Math.floor(lon2px(lon + dLon, z) / 256);
+  const ty0 = Math.floor(lat2px(lat + dLat, z) / 256), ty1 = Math.floor(lat2px(lat - dLat, z) / 256);
+  const porId = new Map();
+  for (let tx = tx0; tx <= tx1; tx++) for (let ty = ty0; ty <= ty1; ty++) {
+    const r = await pm.getZxy(z, tx, ty);
+    if (!r || !r.data) continue;
+    const vt = new L.VectorTile(new L.Pbf(new Uint8Array(r.data)));
+    const capa = vt.layers.building || vt.layers[Object.keys(vt.layers)[0]];
+    if (!capa) continue;
+    for (let i = 0; i < capa.length; i++) {
+      const f = capa.feature(i);
+      if (f.type !== 3) continue;
+      const gj = f.toGeoJSON(tx, ty, z);
+      const polis = gj.geometry.type === 'Polygon' ? [gj.geometry.coordinates] : gj.geometry.coordinates;
+      const p = f.properties || {};
+      const id = p.id || p['@id'] || ('t' + tx + '_' + ty + '_' + i);
+      for (const anillos of polis) {
+        // a metros locales (x = este, y = norte)
+        const loc = anillos.map(a => a.map(([lo, la]) => [(lo - lon) * mLon, (la - lat) * mLat]));
+        const ext = loc[0];
+        if (ext.length < 4) continue;
+        if (!ext.every(([x, y]) => x * x + y * y <= (RADIO * 0.995) ** 2)) continue;
+        const area = Math.abs(areaAnillo(ext));
+        if (area < 4) continue;
+        const clave = id + (polis.length > 1 ? '_' + Math.round(ext[0][0]) + '_' + Math.round(ext[0][1]) : '');
+        const prev = porId.get(clave);
+        if (prev && prev.area >= area) continue;   // pieza duplicada en el borde de la tesela
+        let h = parseFloat(p.height), fuente = 'altura';
+        if (!(h > 0)) {
+          const pisos = parseFloat(p.num_floors);
+          if (pisos > 0) { h = pisos * M_PISO; fuente = 'pisos'; }
+          else { h = H_DEF; fuente = 'estimada'; }
+        }
+        porId.set(clave, { anillos: loc, area, h, fuente, minH: parseFloat(p.min_height) || 0 });
+      }
+    }
+  }
+  if (mio !== turno || !modelo) return;
+  const lista = [...porId.values()];
+  // elevación del terreno bajo cada edificio (mínimo de sus vértices)
+  for (const b of lista) {
+    let m = Infinity;
+    for (const [x, y] of b.anillos[0]) m = Math.min(m, modelo.elevLL(lat + y / mLat, lon + x / mLon));
+    b.suelo = m;
+    b.color = colorTecho(b.anillos[0]);
+  }
+  modelo.edif = { lista, version, conAltura: lista.filter(b => b.fuente !== 'estimada').length };
+  construirMallaEdif();
+  actualizarMeta(sitio);
+}
+
+function dentro(x, y, r) {
+  let c = false;
+  for (let i = 0, j = r.length - 1; i < r.length; j = i++) {
+    if ((r[i][1] > y) !== (r[j][1] > y) && x < (r[j][0] - r[i][0]) * (y - r[i][1]) / (r[j][1] - r[i][1]) + r[i][0]) c = !c;
+  }
+  return c;
+}
+
+// promedio del color de la imagen sobre una rejilla de puntos dentro de la huella
+function colorTecho(ext) {
+  const { lat, lon, mLat, mLon, colorLL } = modelo;
+  let x0 = Infinity, x1 = -Infinity, y0 = Infinity, y1 = -Infinity;
+  for (const [x, y] of ext) { x0 = Math.min(x0, x); x1 = Math.max(x1, x); y0 = Math.min(y0, y); y1 = Math.max(y1, y); }
+  const pasos = 5;
+  let r = 0, g = 0, b = 0, n = 0;
+  for (let i = 0; i < pasos; i++) for (let j = 0; j < pasos; j++) {
+    const x = x0 + (x1 - x0) * (i + 0.5) / pasos, y = y0 + (y1 - y0) * (j + 0.5) / pasos;
+    if (!dentro(x, y, ext)) continue;
+    const c = colorLL(lat + y / mLat, lon + x / mLon);
+    r += c[0]; g += c[1]; b += c[2]; n++;
+  }
+  if (!n) { let cx = 0, cy = 0; ext.forEach(([x, y]) => { cx += x; cy += y; }); const c = colorLL(lat + cy / ext.length / mLat, lon + cx / ext.length / mLon); return [c[0] / 255, c[1] / 255, c[2] / 255]; }
+  return [r / n / 255, g / n / 255, b / n / 255];
+}
+
+function construirMallaEdif() {
+  if (!modelo) return;
+  if (modelo.mallaEdif) { grupo.remove(modelo.mallaEdif); liberar(modelo.mallaEdif); modelo.mallaEdif = null; }
+  if (!verEdif || !modelo.edif || !modelo.edif.lista.length) return;
+  const geos = [];
+  const col = new THREE.Color();
+  for (const b of modelo.edif.lista) {
+    const forma = new THREE.Shape(b.anillos[0].map(([x, y]) => new THREE.Vector2(x, y)));
+    for (let k = 1; k < b.anillos.length; k++) forma.holes.push(new THREE.Path(b.anillos[k].map(([x, y]) => new THREE.Vector2(x, y))));
+    const alto = Math.max(0.5, (b.h - b.minH) * fEdif);
+    const g = new THREE.ExtrudeGeometry(forma, { depth: alto, bevelEnabled: false });
+    g.rotateX(-Math.PI / 2);
+    const yB = (b.suelo - modelo.e0) * exag - 0.6 + b.minH * fEdif;
+    g.translate(0, yB, 0);
+    g.deleteAttribute('uv');
+    // color del techo tomado de la imagen satelital; fachadas un poco más oscuras
+    const nv = g.attributes.position.count, c = new Float32Array(nv * 3);
+    const nrmE = g.attributes.normal.array, posE = g.attributes.position.array;
+    if (COLOR_EDIF === 'gris') col.setRGB(0.9, 0.9, 0.88);
+    else col.setRGB(b.color[0], b.color[1], b.color[2], THREE.SRGBColorSpace);
+    for (let i = 0; i < nv; i++) {
+      // techo a plena luz; fachadas más oscuras hacia la base (oclusión simulada)
+      const f = nrmE[3 * i + 1] > 0.5 ? 1 : 0.6 + 0.24 * Math.min(1, (posE[3 * i + 1] - yB) / alto);
+      c[3 * i] = col.r * f; c[3 * i + 1] = col.g * f; c[3 * i + 2] = col.b * f;
+    }
+    g.setAttribute('color', new THREE.BufferAttribute(c, 3));
+    geos.push(g.index ? g.toNonIndexed() : g);
+  }
+  const unida = mergeGeometries(geos, false);
+  geos.forEach(g => g.dispose());
+  if (!unida) return;
+  // con imagen histórica, los edificios (actuales) se muestran como fantasmas
+  const fantasma = !!(modelo.wayback && !modelo.wayback.actual);
+  const malla = new THREE.Mesh(unida, new THREE.MeshStandardMaterial({
+    vertexColors: true, roughness: 0.9, metalness: 0,
+    transparent: fantasma, opacity: fantasma ? 0.28 : 1, depthWrite: !fantasma
+  }));
+  malla.castShadow = !fantasma; malla.receiveShadow = true;
+  modelo.mallaEdif = malla;
+  grupo.add(malla);
+}
+
+/* ---------- Fichas documentales (fuente, fecha y escala explícitas) ---------- */
+const PERFILES = {"Granizal":{"tipo":"Asentamiento informal · desplazamiento y soluciones duraderas","resumen":"Granizal es un asentamiento de larga trayectoria en Bello, Antioquia, construido en gran parte por familias desplazadas por la violencia. Su historia combina organización comunitaria, búsqueda de formalización urbana y exposición a amenazas por movimientos en masa.","cifras":[["Más de 32.000","Habitantes mencionados por ACNUR, nov. 2025"],["24 jun. 2025","Deslizamiento de gran impacto documentado"]],"hitos":[["Década de 1990","Llegada y asentamiento de familias afectadas por el conflicto."],["Junio de 2025","Un movimiento en masa provocó una emergencia humanitaria."],["Noviembre de 2025","ACNUR documentó dificultades de formalización, acceso a servicios y riesgo climático."]],"precaucion":"Las cifras se refieren a Granizal en conjunto, no a las viviendas que aparecen en el radio de 500 metros ni al punto de referencia. Verificar su posición frente al límite Bello–Copacabana.","fuentes":[["ACNUR · Granizal y emergencia climática (20 nov. 2025)","https://www.acnur.org/co/node/25"],["Alcaldía de Bello · Balance tras la emergencia (2026)","https://www.bello.gov.co/NuestraAlcaldia/SaladePrensa/Paginas/Granizal%2C%20un%20a%C3%B1o%20despu%C3%A9s.aspx"]]},"Resguardo Yanacona Yachay Wasi":{"tipo":"Territorio indígena Yanacona · Mocoa","resumen":"Yachay Wasi es un territorio del pueblo Yanacona en Mocoa, Putumayo. Su reconocimiento territorial forma parte de los procesos de formalización de derechos colectivos indígenas. No debe confundirse con Villa María de Anamú, otra entidad territorial Yanacona.","cifras":[["42,7 ha","Área reportada para la constitución de 2022"],["95 familias","Registradas para el proceso de constitución (fuente de 2023)"]],"hitos":[["27 oct. 2022","Constitución del resguardo registrada en el informe de la Comisión Nacional de Territorios Indígenas."],["2024","El Plan de Desarrollo de Mocoa relaciona a Yachay Wasi entre sus comunidades Yanacona."]],"precaucion":"La coordenada utilizada procede de Medio Afán y no delimita ni identifica necesariamente el predio o el conjunto del resguardo. Cifras de distintas fechas no deben mezclarse como un censo actual.","fuentes":[["CNTI · Informe de resultados y formalización territorial (2023)","https://www.cntindigena.org/wp-content/uploads/2024/02/INFORME-FINAL-TF-fase-1-31012024.pdf"],["Alcaldía de Mocoa · Plan de Desarrollo 2024–2027","https://www.mocoa-putumayo.gov.co/Transparencia/Normatividad/Acuerdo_No_005_de_2024-Plan_de_Desarrollo_2024-2027.pdf"]]},"Resguardo Yanacona Villa María de Anamú":{"tipo":"Resguardo indígena Yanacona · Mocoa","resumen":"Villa María de Anamú es un resguardo Yanacona de Mocoa con una importante relación territorial con el Parque Nacional Natural Serranía de los Churumbelos Auka Wasi. El resguardo no es intercambiable con Yachay Wasi.","cifras":[["1.496 ha","Extensión documentada del resguardo"],["65,7 %","Superposición reportada con el área protegida"]],"hitos":[["2010","Constitución mediante Acuerdo 228 de INCODER, según Parques Nacionales."],["Información institucional","Parques Nacionales describe la relación entre territorio, identidad cultural y conservación."]],"precaucion":"El punto del diorama corresponde a una referencia del sector Anamú: no es el perímetro del resguardo. La extensión y el porcentaje provienen de una fuente institucional y no de la geometría representada aquí.","fuentes":[["Parques Nacionales · Comunidades en Serranía de los Churumbelos","https://old.parquesnacionales.gov.co/portal/es/parques-nacionales/parque-nacional-natural-serrania-de-los-churumbelos/comunidades/"]]},"Cúcuta (asentamiento sin especificar)":{"tipo":"Referencia urbana · asentamiento pendiente de identificar","resumen":"El registro conserva un punto urbano de Cúcuta, pero no incluye el nombre ni la delimitación de un asentamiento concreto. No es adecuado atribuirle una historia, cifras demográficas o condiciones de vivienda de una comunidad específica.","cifras":[],"hitos":[],"precaucion":"Antes de publicar una ficha territorial, incorporar nombre del asentamiento, fuente de la coordenada, fecha de levantamiento y polígono o ubicación validada.","fuentes":[]},"Bajamar: Alberto Lleras Camargo":{"tipo":"Barrio urbano · sector de bajamar en Buenaventura","resumen":"Alberto Lleras Camargo es un barrio de la comuna 3 de Buenaventura, en la isla Cascajal. Una caracterización de población de bajamar lo incluye entre los sectores estudiados para procesos de reubicación. Los riesgos y necesidades varían dentro del barrio.","cifras":[["Comuna 3","Clasificación administrativa del barrio"]],"hitos":[["2016","Caracterización municipal de población de bajamar y procesos de reubicación."]],"precaucion":"La coordenada representa una referencia del barrio, no un asentamiento delimitado. La amenaza por inundación o sismo es contexto de la zona de bajamar; no una evaluación predial de las viviendas visibles.","fuentes":[["Distrito de Buenaventura · Anuario estadístico 2014–2018","https://www.buenaventura.gov.co/images/multimedia/20201228_anuario_estadistico_2014___2018.pdf"],["OSSO · Amenazas urbanas de Buenaventura","https://www.osso.org.co/docu/proyectos/grupo-osso/2000/buenaventura/resumen.html"]]},"Bajamar: Punta del Este":{"tipo":"Barrio costero · Buenaventura","resumen":"Punta del Este figura entre los barrios de la comuna 5 de Buenaventura. El entorno urbano costero se relaciona con los desafíos de exposición a mareas, inundaciones y condiciones del hábitat que han sido estudiados a escala de ciudad.","cifras":[["Comuna 5","Clasificación administrativa del barrio"]],"hitos":[],"precaucion":"La presencia de riesgos ambientales a escala de Buenaventura no permite determinar el nivel de riesgo de cada vivienda de Punta del Este. El marcador no es un polígono oficial del barrio.","fuentes":[["Distrito de Buenaventura · Anuario estadístico 2014–2018","https://www.buenaventura.gov.co/images/multimedia/20201228_anuario_estadistico_2014___2018.pdf"],["OSSO · Evaluación de amenazas urbanas","https://www.osso.org.co/docu/proyectos/grupo-osso/2000/buenaventura/resumen.html"]]},"Bajamar: La Playita":{"tipo":"Barrio de bajamar · Buenaventura","resumen":"La Playita es un barrio de la comuna 4 de Buenaventura. Se encuentra entre los barrios contemplados en una caracterización de hogares de bajamar; su contexto territorial comprende formas de ocupación costera y retos de habitabilidad.","cifras":[["Comuna 4","Clasificación administrativa del barrio"]],"hitos":[["2016","Documento de caracterización de población de bajamar publicado por el Distrito."]],"precaucion":"No confundir el punto referencial del barrio con el conjunto de hogares caracterizados o con una zona predialmente evaluada como riesgosa.","fuentes":[["Distrito de Buenaventura · Caracterización de bajamar","https://www.buenaventura.gov.co/images/multimedia/20160804_caracterizacion_sociodemografica_de_la_poblacion_de_bajamar___malecon.pdf"],["OSSO · Amenazas en Buenaventura","https://www.osso.org.co/docu/proyectos/grupo-osso/2000/buenaventura/resumen.html"]]},"Cabildo Siona Mame Ñata Umuguse (Nuevo Amanecer)":{"tipo":"Cabildo del pueblo Siona · desplazamiento y reubicación","resumen":"El cabildo Siona Mame Ñata Umuguse, también conocido como Nuevo Amanecer, agrupa familias que se desplazaron de sus territorios ancestrales por el conflicto armado. ACNUR documenta su asentamiento en Villa Docente, Puerto Asís, y su búsqueda de reconocimiento territorial.","cifras":[["38 familias","Reporte de la Unidad para las Víctimas, dic. 2024"],["142 personas","Mismo reporte institucional de 2024"]],"hitos":[["2004","Familias desplazadas se establecieron en Villa Docente, según ACNUR."],["2017","Comenzó la solicitud de reubicación colectiva."],["Marzo de 2026","ACNUR documentó la persistencia de barreras para adquirir tierras."]],"precaucion":"Las dos coordenadas candidatas difieren aproximadamente 2,29 km y ninguna ha sido validada como sitio exacto. La historia institucional de Villa Docente no verifica ninguno de los dos puntos.","fuentes":[["ACNUR · El pueblo Siona lucha por su territorio (mar. 2026)","https://www.acnur.org/co/noticias/historias/el-pueblo-siona-lucha-por-su-territorio-con-el-apoyo-de-acnur"],["Unidad para las Víctimas · Nuevo Amanecer (dic. 2024)","https://www.unidadvictimas.gov.co/se-fortalece-guardia-indigena-comunidad-nuevo-amanecer-puerto-asis-putumayo/"]]},"Antiguo Aeropuerto":{"tipo":"Asentamiento en proceso de formalización · Uribia","resumen":"Antiguo Aeropuerto es un área de asentamiento de Uribia, La Guajira, con comunidades Wayúu, personas refugiadas, retornadas y migrantes. En noviembre de 2025 se formalizó urbanísticamente a los sectores Transformación y Aeropuerto 1 con apoyo estatal y de ACNUR.","cifras":[["Más de 3.600","Personas beneficiadas por la legalización de dos sectores, nov. 2025"],["2 sectores","Transformación y Aeropuerto 1"]],"hitos":[["2022","La Alcaldía documentó gestiones sobre el predio Flor del Campo."],["4 nov. 2025","Legalización urbanística de Transformación y Aeropuerto 1 anunciada por Cancillería."]],"precaucion":"Los 3.600 beneficiarios corresponden a los dos sectores legalizados, no necesariamente a todo el asentamiento. Las dos referencias geográficas difieren alrededor de 1,65 km; ninguna delimita los sectores.","fuentes":[["Cancillería · Legalización de barrios de Uribia (4 nov. 2025)","https://www.cancilleria.gov.co/sala-de-prensa/noticias/uribia-da-un-paso-historico-gobierno-colombiano-y-acnur-legalizan-barrios-que-benefician-mas-de-3600-personas-wayuu-refugiadas-y-migrantes"]]}};
+const contexto = document.getElementById('contexto');
+const btnContexto = document.getElementById('btnContexto');
+const escapeCtx = v => String(v ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+function abrirContexto(open) {
+  contexto.hidden = !open;
+  document.body.classList.toggle('contexto-abierto', open);
+  btnContexto.setAttribute('aria-expanded', String(open));
+  btnContexto.querySelector('.ctx-icon').textContent = open ? '×' : 'ⓘ';
+  btnContexto.querySelector('.ctx-label').textContent = open ? 'Cerrar información' : 'Información del asentamiento';
+  btnContexto.setAttribute('aria-label', open ? 'Cerrar información del asentamiento' : 'Abrir información del asentamiento');
+}
+btnContexto.addEventListener('click', () => abrirContexto(contexto.hidden));
+if (P.get('info') === '1' && UI !== 'none') abrirContexto(true);
+document.addEventListener('keydown', e => { if(e.key === 'Escape' && !contexto.hidden) abrirContexto(false); });
+function renderizarContexto(s) {
+  const p = PERFILES[s.nombre];
+  if(!p) return;
+  const metr = p.cifras.length ? `<div class="ctx-h">Datos documentados</div><div class="ctx-metrics">${p.cifras.map(([val,lab])=>`<div class="ctx-metric"><strong>${escapeCtx(val)}</strong><span>${escapeCtx(lab)}</span></div>`).join('')}</div>` : '';
+  const cron = p.hitos.length ? `<div class="ctx-h">Antecedentes e hitos</div><ol class="ctx-timeline">${p.hitos.map(([when,what])=>`<li><b>${escapeCtx(when)}</b>${escapeCtx(what)}</li>`).join('')}</ol>` : '';
+  const fuentes = p.fuentes.length ? `<div class="ctx-h">Fuentes públicas</div><ul class="ctx-sources">${p.fuentes.map(([tit,url])=>`<li><a href="${escapeCtx(url)}" target="_blank" rel="noopener noreferrer">${escapeCtx(tit)}</a></li>`).join('')}</ul>` : '<p class="ctx-note">No hay una ficha externa comprobada para este registro genérico.</p>';
+  const idxAlterno = SITIOS.findIndex((d,i)=> i !== actual && d.nombre === s.nombre && d.variante !== s.variante);
+  contexto.innerHTML = `<div class="ctx-tag">Ficha territorial · Fuentes contrastadas</div><h2>${escapeCtx(s.nombre)}</h2>
+    <div class="ctx-tag">${escapeCtx(p.tipo)}</div><p class="ctx-body">${escapeCtx(p.resumen)}</p>
+    ${metr}${cron}
+    <div class="ctx-warning"><b>Precisión cartográfica:</b> ${escapeCtx(p.precaucion)}
+      <div style="margin-top:6px">Referencia actual: ${escapeCtx(s.variante || 'coordenada libre')} · ${Number(s.lat).toFixed(5)}, ${Number(s.lon).toFixed(5)}.</div>
+    </div>
+    ${idxAlterno>=0?`<button type="button" class="ctx-variant" id="alternarPunto">Ver otra coordenada candidata del mismo lugar</button>`:''}
+    ${fuentes}<p class="ctx-note">La ficha documenta el asentamiento o barrio en su conjunto: el círculo de ${Math.round(RADIO)} m es solo un recorte visual, no sus límites. Las alturas y texturas 3D pueden ser aproximadas.</p>`;
+  contexto.scrollTop = 0;
+  const alt = document.getElementById('alternarPunto');
+  if(alt) alt.addEventListener('click',()=>seleccionar(idxAlterno));
+}
+
+/* ---------- Panel ---------- */
+const $ = id => document.getElementById(id);
+
+function actualizarPanel(s) {
+  $('titulo').textContent = s.nombre;
+  $('sub').textContent = [s.municipio, s.departamento].filter(Boolean).join(', ') + (s.variante ? ' · ' + s.variante : '');
+  $('coords').textContent = s.lat.toFixed(5) + ', ' + s.lon.toFixed(5);
+  const chips = $('chips'); chips.replaceChildren();
+  const chip = (txt, cls) => { const e = document.createElement('span'); e.className = 'chip ' + cls; e.textContent = txt; chips.appendChild(e); };
+  if (s.qa) {
+    const cls = /no utilizar|distinta|conflicto/i.test(s.qa) ? 'bad' : 'warn';
+    chip('QA: ' + s.qa, cls);
+  }
+  if (s.apto === 'No') chip('Ubicación referencial, no sitio exacto', 'warn');
+  else if (s.apto === 'Sí' || s.apto === 'Si') chip('Sitio exacto', 'ok');
+  $('obs').textContent = s.obs || '';
+  $('obsBox').style.display = (s.obs && UI === 'full') ? '' : 'none';
+  $('meta').textContent = '';
+  renderizarContexto(s);
+  redimensionar();
+}
+
+function actualizarMeta(s) {
+  if (!modelo) return;
+  modelo.sitio = s;
+  const rango = Math.round(modelo.eMax - modelo.eMin);
+  let txt = `Radio ${RADIO} m · Altitud ${Math.round(modelo.e0)} m s.n.m. · Desnivel ${rango} m · Relieve exagerado ×${exag.toFixed(1)}`;
+  if (verEdif && modelo.edif) {
+    const e = modelo.edif, nE = e.lista.length;
+    if (!nE) txt += ' · Sin edificios en Overture para esta zona';
+    else {
+      const pct = Math.round(100 * e.conAltura / nE);
+      txt += ` · ${nE.toLocaleString('es-CO')} edificios (Overture ${e.version.slice(0, 7)}), altura ×${fEdif.toFixed(1)}; ` +
+        (pct >= 95 ? 'alturas reales' : pct === 0 ? `altura asumida de ${H_DEF} m (sin dato)` : `${pct}% con altura real, el resto asumida de ${H_DEF} m`);
+    }
+  } else if (verEdif) txt += ' · Cargando edificios…';
+  if (VER_CURVAS) txt += ` · Curvas cada ${U_CURVAS.uInt.value} m`;
+  const wb = modelo.wayback;
+  if (wb && wb.texto) txt += ' · ' + wb.texto;
+  $('meta').textContent = txt;
+  redimensionar();
+}
+
+function aviso(txt) {
+  const t = $('toast'); t.textContent = txt; t.classList.add('visible');
+  clearTimeout(aviso._t); aviso._t = setTimeout(() => t.classList.remove('visible'), 2600);
+}
+
+function actualizarBotonRotar() { $('btnRotar').textContent = controls.autoRotate ? 'Pausar giro' : 'Girar'; }
+
+/* ---------- Galería de miniaturas ---------- */
+let actual = sitioLibre ? -1 : sitioIdx;
+const galeria = $('galeria');
+if (sitioLibre) document.body.classList.add('sin-galeria');
+const miniaturas = SITIOS.map((s, i) => {
+  const b = document.createElement('button');
+  b.type = 'button'; b.className = 'tn'; b.setAttribute('role', 'listitem');
+  b.title = s.etiqueta + (s.municipio ? ' · ' + s.municipio : '');
+  const cv = document.createElement('canvas'); cv.width = cv.height = 140;
+  const t = document.createElement('span'); t.textContent = s.etiqueta;
+  const m = document.createElement('small'); m.textContent = s.municipio;
+  b.append(cv, t, m);
+  b.addEventListener('click', () => seleccionar(i));
+  galeria.appendChild(b);
+  return { b, cv };
+});
+
+function marcarActiva() {
+  miniaturas.forEach((m, i) => m.b.classList.toggle('activo', i === actual));
+  const a = miniaturas[actual];
+  // desplazar solo la galería (scrollIntoView podría mover la página del StoryMap que contiene el iframe)
+  if (a) galeria.scrollTo({ left: a.b.offsetLeft - (galeria.clientWidth - a.b.offsetWidth) / 2, behavior: 'smooth' });
+}
+
+function seleccionar(i) {
+  if (i === actual) return;
+  actual = i; sitioIdx = i;
+  const u = new URL(location.href); u.searchParams.set('sitio', i + 1); u.searchParams.delete('lat'); u.searchParams.delete('lon');
+  try { history.replaceState(null, '', u); } catch (e) {}
+  marcarActiva();
+  cargar(SITIOS[i]);
+}
+
+// recorte circular de 500 m de la imagen satelital de cada sitio
+async function dibujarMiniaturas() {
+  for (let i = 0; i < SITIOS.length; i++) {
+    const s = SITIOS[i], z = 16;
+    try {
+      const im = await mosaico(s.lat, s.lon, RADIO, z,
+        (z, x, y) => `https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/${z}/${y}/${x}`, false);
+      const cx = lon2px(s.lon, z) - im.oX, cy = lat2px(s.lat, z) - im.oY;
+      const mpp = 156543.03392 * Math.cos(s.lat * Math.PI / 180) / 2 ** z;
+      const rp = RADIO / mpp;
+      const g = miniaturas[i].cv.getContext('2d');
+      g.save(); g.beginPath(); g.arc(70, 70, 70, 0, Math.PI * 2); g.clip();
+      g.drawImage(im.canvas, cx - rp, cy - rp, 2 * rp, 2 * rp, 0, 0, 140, 140);
+      g.restore();
+      g.fillStyle = '#d64545'; g.beginPath(); g.arc(70, 70, 5, 0, Math.PI * 2); g.fill();
+      g.strokeStyle = '#fff'; g.lineWidth = 2; g.stroke();
+    } catch (e) { console.warn('Miniatura sin imagen', s.nombre, e); }
+  }
+}
+marcarActiva();
+
+const chk = $('chkEdif'); chk.checked = verEdif;
+chk.addEventListener('change', () => {
+  verEdif = chk.checked;
+  if (verEdif && modelo && !modelo.edif) cargarEdificios(modelo.sitio, turno).catch(e => aviso('No se pudieron cargar los edificios'));
+  construirMallaEdif(); if (modelo && modelo.sitio) actualizarMeta(modelo.sitio);
+});
+const rngE = $('fEdif'); rngE.value = fEdif; $('fEdifVal').textContent = '×' + fEdif.toFixed(1);
+let tEdif;
+rngE.addEventListener('input', () => {
+  fEdif = +rngE.value; $('fEdifVal').textContent = '×' + fEdif.toFixed(1);
+  clearTimeout(tEdif); tEdif = setTimeout(() => { construirMallaEdif(); if (modelo && modelo.sitio) actualizarMeta(modelo.sitio); }, 120);
+});
+const rng = $('exag'); rng.value = exag;
+rng.addEventListener('input', () => { exag = +rng.value; aplicarExag(); });
+$('btnVista').addEventListener('click', vistaInicial);
+$('btnRotar').addEventListener('click', () => { controls.autoRotate = !controls.autoRotate; actualizarBotonRotar(); });
+$('btnCopiar').addEventListener('click', async () => {
+  const u = new URL(location.href.split('?')[0]);
+  if (actual >= 0) u.searchParams.set('sitio', actual + 1);
+  else { u.searchParams.set('lat', sitioLibre.lat); u.searchParams.set('lon', sitioLibre.lon); }
+  if (RADIO !== 500) u.searchParams.set('r', RADIO);
+  if (exag !== 1.5) u.searchParams.set('exag', exag);
+  if (!verEdif) u.searchParams.set('edif', '0');
+  else if (fEdif !== 3) u.searchParams.set('fedif', fEdif);
+  u.searchParams.set('ui', 'galeria');
+  u.searchParams.set('info', contexto.hidden ? '0' : '1');
+  try { await navigator.clipboard.writeText(u.toString()); aviso('URL copiada'); }
+  catch (e) { window.prompt('Copia esta URL:', u.toString()); }
+});
+actualizarBotonRotar();
+
+/* ---------- Imagen histórica (Esri World Imagery Wayback) ---------- */
+let wbCfg = null;
+const fechaPub = k => (wbCfg[k].itemTitle.match(/\d{4}-\d{2}-\d{2}/) || [''])[0];
+async function cargarCfgWayback() {
+  if (!wbCfg) {
+    wbCfg = await (await fetch('https://s3-us-west-2.amazonaws.com/config.maptiles.arcgis.com/waybackconfig.json')).json();
+    wbCfg._orden = Object.keys(wbCfg).filter(k => k !== '_orden').sort((a, b) => fechaPub(b).localeCompare(fechaPub(a)));
+  }
+  return wbCfg;
+}
+const tileXY = (lat, lon, z) => [Math.floor(lon2px(lon, z) / 256), Math.floor(lat2px(lat, z) / 256)];
+
+// versiones en que la imagen del centro del sitio realmente cambió
+async function versionesLocales(lat, lon) {
+  const cfg = await cargarCfgWayback(), ks = cfg._orden, z = 17;
+  const [x, y] = tileXY(lat, lon, z);
+  const res = [];
+  let i = 0;
+  while (i < ks.length && res.length < 25) {
+    const j = await (await fetch(`https://wayback.maptiles.arcgis.com/arcgis/rest/services/World_Imagery/MapServer/tilemap/${ks[i]}/${z}/${y}/${x}`)).json();
+    if (!j.data || !j.data[0]) break;
+    const sel = String(j.select && j.select[0] ? j.select[0] : ks[i]);
+    if (!cfg[sel]) break;
+    res.push(sel);
+    i = Math.max(ks.indexOf(sel), i) + 1;
+  }
+  return res;
+}
+
+// fecha real de captura de la imagen en ese punto, según los metadatos de la versión
+async function captura(rel, lat, lon) {
+  const url = wbCfg[rel].metadataLayerUrl;
+  if (!url) return null;
+  const q = `/query?geometry=${lon},${lat}&geometryType=esriGeometryPoint&inSR=4326&spatialRel=esriSpatialRelIntersects&outFields=SRC_DATE,SRC_DATE2,SRC_RES,NICE_NAME,MinMapLevel,MaxMapLevel&returnGeometry=false&f=json`;
+  const capas = await Promise.all([...Array(16).keys()].map(L =>
+    fetch(url + '/' + L + q).then(r => r.json()).catch(() => null)));
+  for (const c of capas) {
+    const f = c && c.features && c.features[0];
+    if (!f) continue;
+    const a = f.attributes;
+    if (a.MinMapLevel != null && (a.MinMapLevel > 17 || a.MaxMapLevel < 17)) continue;
+    const t = a.SRC_DATE2 || a.SRC_DATE;
+    if (!t) continue;
+    return { fecha: new Date(typeof t === 'number' ? t : String(t)), fuente: a.NICE_NAME || '', res: a.SRC_RES };
+  }
+  return null;
+}
+
+const fmtFecha = d => d.toLocaleDateString('es-CO', { year: 'numeric', month: 'short', day: 'numeric', timeZone: 'UTC' });
+
+async function prepararTiempo(sitio, mio) {
+  const caja = $('tiempo'), anios = $('anios');
+  anios.replaceChildren(); $('notaTiempo').textContent = 'Buscando imágenes anteriores…';
+  caja.classList.remove('oculto');
+  const vers = await versionesLocales(sitio.lat, sitio.lon);
+  if (mio !== turno) return;
+  const infos = await Promise.all(vers.map(v => captura(v, sitio.lat, sitio.lon).catch(() => null)));
+  if (mio !== turno) return;
+  // una opción por fecha de captura distinta; la más reciente es la imagen actual
+  const vistos = new Set(), opciones = [];
+  vers.forEach((v, i) => {
+    const inf = infos[i];
+    const clave = inf ? inf.fecha.toISOString().slice(0, 10) : 'pub' + fechaPub(v);
+    if (vistos.has(clave)) return;
+    vistos.add(clave);
+    opciones.push({ rel: v, inf, actual: opciones.length === 0 });
+  });
+  opciones.reverse();
+  if (opciones.length < 2) { $('notaTiempo').textContent = 'No hay imágenes anteriores distintas para este sitio.'; return; }
+  for (const o of opciones) {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.textContent = o.actual ? 'Actual' : (o.inf ? o.inf.fecha.getUTCFullYear() : fechaPub(o.rel).slice(0, 4) + '*');
+    b.title = o.inf ? 'Capturada ' + fmtFecha(o.inf.fecha) + (o.inf.fuente ? ' (' + o.inf.fuente + ')' : '') : 'Fecha de captura no disponible; versión publicada ' + fechaPub(o.rel);
+    b.addEventListener('click', () => usarVersion(o, b));
+    o.boton = b;
+    anios.appendChild(b);
+  }
+  const act = opciones[opciones.length - 1];
+  modelo.wayback = { actual: true, texto: act.inf ? 'Imagen de ' + fmtFecha(act.inf.fecha) : '' };
+  act.boton.classList.add('activo');
+  notaTiempo(act);
+  if (modelo.sitio) actualizarMeta(modelo.sitio);
+  if (FECHA_INI && !prepararTiempo.usado) {
+    prepararTiempo.usado = true;
+    const objetivo = parseInt(FECHA_INI, 10);
+    let mejor = null, dmin = Infinity;
+    for (const o of opciones) {
+      const a = o.inf ? o.inf.fecha.getUTCFullYear() : parseInt(fechaPub(o.rel), 10);
+      if (Math.abs(a - objetivo) < dmin) { dmin = Math.abs(a - objetivo); mejor = o; }
+    }
+    if (mejor && !mejor.actual) usarVersion(mejor, mejor.boton);
+  }
+}
+
+function notaTiempo(o) {
+  $('notaTiempo').textContent = o.inf
+    ? 'Capturada ' + fmtFecha(o.inf.fecha) + (o.inf.res ? ` · ${(+o.inf.res).toFixed(1)} m/píxel` : '') + (o.actual ? '' : ' · edificios de 2026 en transparencia')
+    : 'Versión publicada ' + fechaPub(o.rel) + ' (fecha de captura no disponible)';
+}
+
+let turnoImg = 0;
+async function usarVersion(o, boton) {
+  if (!modelo) return;
+  const mio = ++turnoImg, sitio = modelo.sitio;
+  [...$('anios').children].forEach(b => b.classList.toggle('activo', b === boton));
+  $('notaTiempo').textContent = 'Descargando imagen…';
+  try {
+    const url = o.actual
+      ? (z, x, y) => `https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/${z}/${y}/${x}`
+      : (z, x, y) => wbCfg[o.rel].itemURL.replace('{level}', z).replace('{row}', y).replace('{col}', x);
+    const im = await mosaico(sitio.lat, sitio.lon, RADIO, Z_IMG, url, false);
+    if (mio !== turnoImg || !modelo || modelo.sitio !== sitio) return;
+    if (im.oX !== modelo.img.oX || im.oY !== modelo.img.oY || im.W !== modelo.img.W) throw new Error('Mosaico distinto');
+    const tex = new THREE.CanvasTexture(im.canvas);
+    tex.colorSpace = THREE.SRGBColorSpace;
+    tex.anisotropy = renderer.capabilities.getMaxAnisotropy();
+    const mat = modelo.sup.material;
+    const vieja = mat.map; mat.map = tex; mat.needsUpdate = true;
+    if (vieja && vieja !== modelo.texImg) vieja.dispose();
+    modelo.wayback = { actual: o.actual, texto: o.inf ? 'Imagen de ' + fmtFecha(o.inf.fecha) : 'Imagen publicada ' + fechaPub(o.rel) };
+    construirMallaEdif();
+    notaTiempo(o);
+    actualizarMeta(sitio);
+  } catch (e) {
+    console.error(e);
+    $('notaTiempo').textContent = 'No se pudo cargar esa imagen.';
+  }
+}
+
+/* ---------- Mapa de ubicación ---------- */
+const MINI = {"col": "M101.3 18.1L100.9 18.2L100.4 18.5L98.9 19.0L96.9 19.5L94.2 20.2L93.6 20.9L91.1 25.4L88.9 26.3L88.1 27.0L87.5 27.8L86.2 29.4L85.6 30.6L84.2 33.2L83.4 36.4L83.1 38.3L82.7 40.9L82.0 42.3L81.2 43.5L80.3 44.7L79.5 46.1L78.8 47.1L78.7 47.5L79.0 47.8L80.6 47.5L81.3 47.2L82.1 46.8L82.6 47.0L83.2 48.1L83.8 48.3L84.4 48.1L85.0 48.4L85.8 51.3L86.5 53.7L88.0 55.2L89.2 56.4L89.5 57.5L89.8 59.0L89.8 59.7L89.5 60.1L88.9 61.0L88.7 62.8L88.6 63.3L88.5 64.9L88.6 65.9L88.9 66.7L89.4 67.1L90.5 67.3L91.5 67.6L92.1 68.9L92.9 70.6L93.7 71.3L95.0 71.8L95.9 71.6L98.0 71.3L99.8 71.4L102.4 71.8L103.4 71.8L104.7 71.7L106.9 70.8L107.7 70.7L108.6 70.8L109.9 71.2L110.7 71.6L111.6 72.0L112.9 72.2L113.8 72.2L114.4 72.2L114.8 72.4L116.9 75.0L118.8 77.2L120.3 79.2L122.0 81.2L122.2 81.3L123.0 81.1L123.5 81.2L124.0 81.6L124.8 81.4L125.9 80.7L127.6 80.5L129.8 81.0L132.7 81.0L136.3 80.5L138.6 80.0L139.5 79.5L141.0 79.6L142.7 80.0L143.7 80.7L143.8 81.4L144.1 82.4L143.7 83.5L142.6 84.5L142.0 85.9L141.9 87.6L141.3 88.8L140.3 89.6L139.8 90.7L140.1 92.3L140.0 94.5L139.5 97.4L139.5 99.2L140.0 99.7L140.2 100.6L140.2 101.6L140.3 102.6L140.9 103.8L141.7 106.2L142.3 107.3L142.9 107.7L143.5 108.2L145.1 110.7L145.5 111.2L145.4 111.7L145.2 112.0L145.0 112.2L143.3 113.7L139.8 117.0L139.4 117.4L139.5 118.1L140.5 117.6L141.6 118.0L142.1 118.1L142.4 118.3L142.7 119.2L143.1 119.3L143.6 119.7L144.7 120.6L145.5 121.6L146.2 122.1L146.6 122.5L146.8 123.1L146.6 123.8L147.2 125.2L147.5 125.7L147.7 126.3L147.5 126.8L148.0 127.5L148.5 128.8L149.1 130.3L149.2 131.2L149.4 131.6L149.7 132.8L150.3 133.9L150.1 134.6L150.3 135.4L148.2 135.9L148.1 135.8L147.9 135.5L148.0 133.4L148.0 131.1L147.6 130.1L146.7 128.5L145.4 126.5L145.1 125.9L144.5 125.5L143.9 125.5L143.5 125.6L142.8 126.0L142.2 126.4L141.1 127.7L140.0 129.1L139.3 129.4L138.7 129.6L138.1 129.5L137.6 129.1L137.1 128.4L136.5 127.3L135.8 127.0L135.5 127.3L135.3 127.9L135.1 128.5L135.6 129.3L136.0 129.9L135.3 129.9L133.1 129.9L130.4 129.9L127.8 129.9L125.5 129.9L123.4 129.9L122.5 129.8L121.7 129.5L120.9 129.3L120.5 129.3L119.7 129.7L118.8 129.7L118.1 130.1L117.5 130.0L117.5 131.8L117.5 134.4L117.5 137.2L118.1 137.0L118.6 137.0L119.0 137.2L120.1 137.0L120.6 137.1L121.2 137.2L121.7 137.2L122.0 137.4L122.4 137.4L122.9 137.1L123.4 137.3L124.0 137.7L124.4 138.3L124.8 139.0L125.1 139.3L125.1 140.0L125.1 140.5L124.9 141.0L125.1 141.3L125.2 141.6L125.2 141.8L125.0 141.9L124.6 141.9L124.1 142.0L123.8 141.9L123.5 141.7L123.3 141.6L122.9 141.7L122.6 141.5L122.2 141.2L121.7 140.8L121.1 141.0L120.7 141.1L120.2 141.4L119.9 141.6L119.5 141.5L119.0 141.7L118.6 142.0L118.0 142.2L117.4 142.3L116.7 142.4L116.0 142.4L115.3 142.5L115.2 143.9L115.1 146.8L115.1 148.7L115.1 150.4L115.4 151.0L116.7 152.4L117.8 153.1L118.6 153.9L119.5 154.2L119.9 154.5L120.1 155.0L120.3 155.5L120.4 155.9L120.3 156.4L120.1 156.8L120.1 157.3L120.5 157.6L120.5 158.1L120.8 158.5L120.9 159.0L121.2 159.3L121.5 159.5L121.9 159.9L122.0 160.2L121.9 160.6L121.9 160.9L122.4 161.6L122.5 162.0L122.3 162.6L122.1 164.5L121.6 166.8L121.3 168.4L120.8 171.2L120.2 174.4L119.5 178.3L118.8 182.1L118.1 185.9L117.5 189.2L116.8 192.9L116.4 195.2L116.2 195.6L115.7 194.8L114.8 194.0L114.0 193.5L113.7 192.9L113.2 191.7L112.6 191.3L112.1 190.9L111.7 191.0L111.2 191.3L110.5 191.5L110.0 191.5L108.1 190.6L107.7 190.6L109.0 188.6L111.2 185.1L112.7 182.9L114.2 180.4L115.1 179.2L115.1 179.0L115.1 178.7L114.8 178.2L114.0 178.0L113.2 177.6L112.6 177.0L111.8 176.7L111.2 176.3L110.2 175.9L109.5 175.5L108.7 175.4L108.1 174.7L105.8 173.3L105.2 173.2L104.5 173.4L103.6 173.6L102.7 174.4L101.5 174.6L100.4 174.6L99.9 174.2L99.4 174.0L98.7 173.4L97.4 172.9L96.5 172.6L96.0 172.7L95.3 173.4L94.5 174.1L94.0 174.5L93.2 174.5L92.3 175.1L91.4 175.3L90.5 175.4L89.4 175.6L88.3 175.3L87.3 174.9L86.9 174.8L86.5 174.9L85.9 175.2L84.8 175.4L84.0 175.4L83.4 175.3L82.9 174.7L82.0 174.4L81.1 174.0L80.9 173.2L81.0 172.6L81.4 171.8L81.2 170.9L80.8 169.6L80.6 169.1L80.3 168.6L79.8 168.4L78.9 168.5L77.9 168.0L77.3 167.5L77.0 166.9L77.3 165.8L77.0 164.8L76.4 164.3L76.0 163.4L75.4 162.6L74.7 162.3L73.9 162.3L73.2 162.1L72.5 161.3L71.9 161.0L71.1 160.2L69.7 159.9L69.0 159.6L68.6 159.1L68.0 158.2L68.1 157.8L67.8 157.3L67.6 156.5L67.1 155.3L66.6 154.6L66.0 154.0L65.6 153.6L64.9 153.0L64.1 152.6L63.4 152.2L63.1 151.6L62.9 151.1L62.5 151.1L61.9 151.1L61.3 150.9L60.6 150.6L60.1 150.2L59.2 149.4L58.6 149.3L58.2 149.3L57.5 150.0L55.6 149.3L53.9 148.2L52.1 147.9L51.0 147.2L49.9 146.1L49.4 145.4L48.9 145.0L46.7 144.0L46.2 143.9L45.4 144.4L45.1 144.7L45.0 145.5L44.9 146.0L44.2 146.3L43.0 146.2L42.2 145.9L41.6 145.9L41.5 146.1L41.2 146.2L40.5 146.1L39.5 145.9L38.6 145.6L37.4 145.0L36.8 145.0L35.4 144.9L34.3 144.5L33.9 144.2L33.5 141.9L33.3 141.7L32.8 141.6L32.0 141.3L31.5 140.9L31.2 140.2L30.9 139.6L29.5 139.8L27.2 139.0L25.6 138.2L24.1 137.3L21.9 135.6L21.1 135.2L20.1 134.7L19.4 133.9L18.4 133.0L18.1 132.8L17.8 132.1L16.3 131.0L17.0 129.5L18.8 128.5L21.2 129.3L21.5 127.6L20.6 126.2L20.8 123.4L21.1 122.9L21.7 122.1L22.5 121.6L23.0 121.5L23.8 121.7L24.3 121.2L26.3 121.4L26.9 121.2L27.3 120.8L27.7 120.5L28.3 119.9L28.7 119.1L29.0 118.8L29.6 118.9L29.7 118.6L30.0 118.1L31.2 117.1L31.2 116.7L30.9 115.7L31.0 115.3L31.6 115.2L32.5 114.9L32.9 114.0L33.4 113.2L34.0 112.0L34.7 111.9L35.1 110.6L35.9 109.3L37.8 105.7L37.2 105.8L36.8 106.3L36.3 106.2L35.7 105.9L35.9 104.3L35.6 104.1L34.7 105.4L33.9 104.1L33.8 103.3L34.1 102.6L34.1 102.0L32.9 102.4L32.9 101.9L33.7 101.4L34.1 100.9L34.7 100.4L35.0 99.5L35.2 98.2L35.4 96.8L35.3 96.1L34.9 95.5L34.6 92.9L34.7 91.4L34.5 90.2L34.2 89.1L32.7 87.8L35.1 86.3L35.9 85.1L34.8 82.8L33.4 80.7L33.4 79.6L33.8 79.7L34.2 79.7L34.7 77.1L34.5 76.4L33.8 75.1L32.8 75.1L32.0 73.5L31.5 73.1L31.1 72.1L29.8 70.2L28.7 69.1L29.5 66.8L30.2 66.3L30.4 65.8L30.1 64.3L30.2 64.0L30.4 63.8L30.5 63.8L30.8 64.1L31.4 64.7L31.8 65.5L32.2 65.7L32.7 65.4L34.7 63.9L34.6 63.4L34.8 62.4L35.5 61.7L36.2 61.4L36.4 61.0L36.3 60.3L35.5 58.6L34.8 57.7L34.4 56.8L34.1 55.9L33.3 55.2L33.7 54.4L34.3 53.5L34.5 53.4L34.8 53.6L35.7 55.2L37.2 56.2L38.7 57.9L39.3 59.0L39.8 59.2L40.3 59.7L40.1 60.0L39.6 60.3L39.5 61.0L39.8 61.3L40.1 61.5L41.0 61.4L41.4 60.6L41.1 57.2L40.6 55.5L40.0 55.0L39.5 54.3L39.9 53.8L40.8 53.6L42.0 53.0L46.6 49.7L48.2 46.7L49.4 45.6L50.7 44.9L52.3 45.0L53.6 44.7L54.0 43.7L53.7 42.4L53.2 41.6L53.6 40.4L54.2 38.7L54.1 37.2L54.8 36.3L54.5 36.0L53.6 36.7L52.9 37.0L53.3 36.4L54.6 35.0L55.2 32.8L55.7 31.9L57.6 30.6L58.0 30.0L59.3 29.0L61.5 26.9L62.4 26.4L66.7 27.7L68.1 27.6L67.8 27.9L67.2 27.9L66.3 28.3L66.0 29.1L66.6 29.9L67.3 30.2L67.9 29.6L68.4 28.1L69.3 26.4L69.5 24.6L70.1 24.0L71.1 23.8L72.7 24.2L74.0 24.5L75.3 24.6L79.3 24.3L85.8 19.7L88.9 18.7L90.7 17.8L92.0 15.9L92.3 14.5L93.2 13.9L94.1 13.9L94.6 13.6L94.7 13.1L96.9 11.9L98.3 11.8L99.4 11.8L101.9 12.8L103.1 14.7L103.3 16.0L101.7 17.4L101.3 18.1ZM26.3 120.8L26.0 121.1L25.5 120.6L25.3 120.1L25.6 119.7L26.1 119.8L26.3 120.2L26.3 120.8Z", "otros": "M226.2 259.1L226.2 259.1L226.2 259.1L226.2 259.1L226.2 259.1L226.2 259.1L226.2 259.1L226.2 259.1L226.2 259.1L226.2 259.1L226.2 259.1L226.2 259.1L226.2 259.1L226.2 259.1L226.2 259.1L226.2 259.1L226.2 259.1L226.2 259.1L226.2 259.1L226.2 259.1L226.2 259.1L226.2 259.1L226.2 259.1L226.2 259.1L226.2 259.1L226.2 259.1L226.2 259.1L226.2 259.1L226.2 259.1L226.2 259.1L226.2 259.1L226.2 259.1L226.2 259.1L226.2 259.1L226.2 259.1L226.2 259.1L226.2 259.1L226.2 259.1L224.5 259.1L220.2 259.1L223.4 259.1L223.3 259.1L221.1 259.1L220.6 259.1L214.2 259.1L207.3 259.1L202.7 259.1L195.3 259.1L190.9 259.1L178.6 259.1L166.6 259.1L167.5 259.1L166.1 259.1L167.3 256.5L152.9 258.4L147.0 259.1L137.4 259.1L134.9 259.1L129.2 259.1L121.1 259.1L114.8 259.1L109.8 259.1L110.5 253.5L101.5 259.1L91.7 259.1L87.6 253.8L80.3 253.2L82.6 248.5L76.4 241.8L71.9 231.8L74.8 229.8L74.8 225.2L81.5 222.0L80.3 216.0L83.2 212.2L84.0 207.0L96.6 199.5L105.6 197.4L107.1 195.7L117.0 196.3L122.0 166.0L122.2 161.3L120.5 154.9L115.7 150.9L115.7 142.9L121.9 141.1L124.1 142.2L124.5 138.0L118.0 136.9L117.9 130.0L139.4 130.2L143.0 126.4L146.1 129.9L148.3 136.4L150.3 135.0L156.4 140.9L165.0 140.2L167.1 136.8L175.3 134.2L179.9 132.4L181.2 127.7L189.0 124.6L188.4 122.3L179.1 121.3L177.5 114.4L178.0 107.0L173.1 104.1L175.1 103.1L183.3 104.5L192.1 107.3L195.3 104.7L203.2 103.0L215.5 98.8L219.6 94.6L218.1 91.5L223.9 91.0L226.2 93.6L225.0 98.4L226.2 100.1L226.2 105.2L226.2 109.1L226.2 118.5L226.2 124.1L226.2 129.2L226.2 134.3L226.2 134.9L226.2 132.7L226.2 132.2L226.2 130.3L226.2 127.4L226.2 128.3L226.2 127.9L226.2 128.8L226.2 126.6L226.2 124.4L226.2 121.2L226.2 122.2L226.2 121.0L226.2 123.4L226.2 125.6L226.2 122.7L226.2 123.1L226.2 126.2L226.2 125.4L226.2 121.3L226.2 113.1L226.2 103.0L226.2 102.5L226.2 108.6L226.2 127.9L226.2 129.7L226.2 137.3L226.2 146.4L226.2 149.7L226.2 151.5L226.2 162.5L226.2 155.3L226.2 159.2L226.2 166.0L226.2 172.4L226.2 178.5L226.2 175.1L226.2 181.0L226.2 180.5L226.2 189.7L226.2 202.0L226.2 205.2L226.2 205.7L226.2 209.1L226.2 223.2L226.2 229.8L226.2 248.1L226.2 255.3L226.2 259.1L226.2 259.1L226.2 259.1L226.2 259.1L226.2 259.1L226.2 259.1L226.2 259.1L226.2 259.1L226.2 259.1L226.2 259.1L226.2 259.1L226.2 259.1L226.2 259.1L226.2 259.1L226.2 259.1L226.2 259.1L226.2 259.1L226.2 259.1L226.2 259.1L226.2 259.1L226.2 259.1L226.2 259.1L226.2 259.1L226.2 259.1L226.2 259.1L226.2 259.1L226.2 259.1L226.2 259.1L226.2 259.1L226.2 259.1ZM117.0 196.3L107.1 195.7L105.6 197.4L96.6 199.5L84.0 207.0L83.2 212.2L80.3 216.0L81.5 222.0L74.8 225.2L74.8 229.8L71.9 231.8L76.4 241.8L82.6 248.5L80.3 253.2L87.6 253.8L91.7 259.1L101.5 259.1L110.5 253.5L109.8 259.1L114.8 259.1L121.1 259.1L130.6 259.1L128.2 259.1L127.7 259.1L127.5 259.1L123.2 259.1L125.1 259.1L122.6 259.1L127.3 259.1L120.4 259.1L117.4 259.1L111.8 259.1L100.7 259.1L99.7 259.1L77.8 259.1L58.1 259.1L49.6 259.1L45.0 259.1L46.8 259.1L37.4 259.1L26.6 259.1L16.1 241.3L11.6 236.3L8.2 228.2L-0.4 221.0L-8.3 216.5L-4.7 211.6L-10.0 201.1L-6.6 193.4L2.2 186.4L3.5 191.0L0.3 193.6L0.7 197.7L5.2 196.8L9.7 198.0L14.3 203.5L20.5 199.0L22.6 191.6L29.4 182.0L42.6 177.6L54.7 166.1L58.1 158.9L56.6 150.5L59.5 149.5L66.8 154.7L70.4 159.9L75.5 162.8L82.0 174.3L90.2 175.7L96.3 172.8L100.3 174.7L106.9 173.8L115.3 178.9L108.2 190.1L111.5 190.4L117.0 196.3ZM34.7 53.3L33.4 54.9L35.9 61.4L33.9 64.6L30.3 63.8L28.9 69.2L25.2 66.0L22.9 60.1L25.6 57.1L22.8 56.4L20.7 52.7L15.2 49.7L10.4 50.4L8.2 54.2L3.7 57.0L1.3 57.3L0.2 59.6L5.5 65.6L2.5 67.1L0.9 68.7L-4.3 69.2L-6.2 62.7L-7.6 64.5L-11.3 63.9L-13.5 59.4L-18.0 58.7L-20.9 57.4L-25.6 57.4L-25.9 59.8L-27.2 58.2L-26.6 56.0L-25.7 53.7L-26.1 51.8L-24.5 50.4L-26.8 48.8L-26.8 44.4L-22.6 43.4L-18.6 47.3L-18.9 49.7L-14.4 50.2L-13.4 49.3L-10.4 52.0L-5.0 51.2L-0.2 48.4L6.5 46.2L10.2 42.9L16.3 43.5L15.9 44.6L22.1 45.0L27.0 46.9L30.6 50.2L34.7 53.3ZM218.1 91.5L219.6 94.6L215.5 98.8L203.2 103.0L195.3 104.7L192.1 107.3L183.3 104.5L175.1 103.1L173.1 104.1L178.0 107.0L177.5 114.4L179.1 121.3L188.4 122.3L189.0 124.6L181.2 127.7L179.9 132.4L175.3 134.2L167.1 136.8L165.0 140.2L156.4 140.9L150.3 135.0L147.0 124.1L144.0 120.2L140.0 117.8L145.6 112.3L145.2 109.8L142.1 106.5L139.9 99.2L140.8 91.3L143.2 87.6L145.2 81.6L141.3 79.7L135.0 81.0L127.1 80.4L122.6 81.6L114.8 72.1L108.4 70.7L94.2 71.8L91.6 67.9L88.9 67.0L88.5 64.7L89.8 60.6L89.0 56.2L86.5 53.7L85.1 48.7L79.4 47.9L82.4 41.5L83.8 33.6L87.0 29.5L91.3 26.4L94.1 20.9L101.2 19.0L100.8 21.6L94.4 22.9L98.0 27.9L97.9 33.7L93.0 40.1L97.1 48.8L101.9 48.1L104.4 40.1L101.0 36.3L100.4 27.9L114.1 23.4L112.6 18.2L116.5 14.8L120.5 22.5L128.2 22.7L135.4 28.8L135.8 32.5L145.7 32.6L157.5 31.4L163.8 36.4L172.3 37.8L178.4 34.3L178.6 31.5L192.2 30.9L205.5 30.7L196.1 34.0L199.9 39.2L208.7 40.0L217.0 45.4L218.8 54.3L224.5 54.0L226.2 56.6L220.1 63.1L219.2 67.1L222.9 71.2L220.2 73.3L213.4 75.0L213.6 80.1L210.6 83.2L218.1 91.5ZM56.6 150.5L58.1 158.9L54.7 166.1L42.6 177.6L29.4 182.0L22.6 191.6L20.5 199.0L14.3 203.5L9.7 198.0L5.2 196.8L0.7 197.7L0.3 193.6L3.5 191.0L2.2 186.4L8.0 178.2L5.7 173.3L1.4 178.5L-5.1 173.6L-2.9 170.5L-4.8 160.5L-0.9 158.9L1.1 152.0L5.3 144.9L4.5 140.4L10.6 138.0L18.1 133.6L29.2 139.9L31.2 139.8L33.9 144.5L43.3 146.0L46.4 144.3L51.9 147.9L56.6 150.5Z", "box": [-80.5, -5, -66, 13.5]};
+function dibujarMini(s) {
+  const [x0, y0, x1, y1] = MINI.box;
+  const px = (s.lon - x0) / (x1 - x0) * 160, py = (y1 - s.lat) / (y1 - y0) * 204;
+  $('mini').innerHTML = `<svg viewBox="0 0 160 204" xmlns="http://www.w3.org/2000/svg">
+    <path d="${MINI.otros}" fill="#e6e9ec" stroke="#c3cad1" stroke-width="0.6"/>
+    <path d="${MINI.col}" fill="#ffffff" stroke="#7b8794" stroke-width="0.9"/>
+    <circle cx="${px.toFixed(1)}" cy="${py.toFixed(1)}" r="9" fill="#d64545" opacity="0.25"/>
+    <circle cx="${px.toFixed(1)}" cy="${py.toFixed(1)}" r="4" fill="#d64545" stroke="#fff" stroke-width="1.5"/>
+  </svg>`;
+  posicionarMini();
+}
+function posicionarMini() {
+  const m = $('mini'), gal = $('galeria');
+  const g = gal && gal.offsetParent !== null ? gal.getBoundingClientRect() : null;
+  m.style.bottom = ((g ? window.innerHeight - g.top : 0) + 10) + 'px';
+}
+window.addEventListener('resize', posicionarMini);
+
+/* ---------- Carga ---------- */
+let turno = 0;
+async function cargar(sitio) {
+  const mio = ++turno;
+  const carga = $('carga');
+  carga.classList.remove('oculto', 'error');
+  $('cargaTxt').textContent = 'Descargando relieve e imagen…';
+  actualizarPanel(sitio);
+  try {
+    const [dem, img] = await Promise.all([
+      mosaico(sitio.lat, sitio.lon, RADIO, Z_DEM,
+        (z, x, y) => `https://s3.amazonaws.com/elevation-tiles-prod/terrarium/${z}/${x}/${y}.png`, true),
+      mosaico(sitio.lat, sitio.lon, RADIO, Z_IMG,
+        (z, x, y) => `https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/${z}/${y}/${x}`, false)
+    ]);
+    if (mio !== turno) return;
+    if (grupo) { scene.remove(grupo); liberar(grupo); grupo = null; modelo = null; }
+    construir(sitio, dem, img);
+    dibujarMini(sitio);
+    turnoImg++;
+    if (!document.body.classList.contains('sin-tiempo') && UI !== 'none') prepararTiempo(sitio, mio).catch(e => { console.warn(e); $('tiempo').classList.add('oculto'); });
+    vistaInicial();
+    carga.classList.add('oculto');
+    if (dem.fallos || img.fallos) aviso('Algunas teselas no cargaron; puede haber huecos.');
+    if (verEdif) cargarEdificios(sitio, mio).catch(e => {
+      console.error(e);
+      if (mio === turno) { aviso('No se pudieron cargar los edificios'); if (modelo) { modelo.edif = { lista: [], version: '', conAltura: 0 }; actualizarMeta(sitio); } }
+    });
+  } catch (e) {
+    if (mio !== turno) return;
+    carga.classList.add('error');
+    $('cargaTxt').textContent = 'No se pudo cargar el terreno: ' + e.message;
+    console.error(e);
+  }
+}
+
+renderer.setAnimationLoop(() => { controls.update(); renderer.render(scene, camera); });
+cargar(sitioLibre || SITIOS[sitioIdx]).then(() => { if (!sitioLibre && (UI === 'full' || UI === 'galeria')) dibujarMiniaturas(); });
+</script>
+</body>
+</html>

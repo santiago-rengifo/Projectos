@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Diorama 3D de asentamientos · Historias y contexto</title>
+<title>Diorama 3D de asentamientos · Ficha lateral StoryMaps</title>
 <style>
   html, body { margin: 0; height: 100%; overflow: hidden; }
   body {
@@ -154,6 +154,44 @@
   @media(max-width:640px){#btnContexto{top:57px;right:8px;padding:8px 11px;font-size:11px}
     #contexto{top:97px;right:8px;max-height:calc(100vh - 265px);width:calc(100vw - 16px);padding:13px 14px}
     .ctx-metric strong{font-size:13px}}
+
+  /* VISTA STORYMAPS: ficha a la derecha y símbolo de información destacado */
+  #btnContexto{
+    right:16px;top:79px;display:inline-flex;align-items:center;gap:11px;
+    min-height:56px;padding:9px 16px 9px 10px;border-radius:15px;
+    background:#123e58;color:white;box-shadow:0 8px 24px #0a24394f;
+    font:750 13px/1.25 system-ui,-apple-system,"Segoe UI",sans-serif;
+    text-align:left;border:1px solid #12516a;
+  }
+  #btnContexto:hover,#btnContexto[aria-expanded="true"]{background:#075f80}
+  #btnContexto:focus-visible{outline:3px solid #f3bd54;outline-offset:3px}
+  #btnContexto .ctx-icon{
+    width:37px;height:37px;flex:none;display:grid;place-items:center;
+    border-radius:50%;background:#ffffff28;border:1px solid #ffffff80;
+    font:700 27px/1 Georgia,serif;
+  }
+  #btnContexto .ctx-label{max-width:140px}
+  #contexto{
+    right:16px;top:148px;width:min(410px,calc(100vw - 32px));
+    max-height:calc(100dvh - 280px);
+    overflow-y:auto;overscroll-behavior:contain;
+    border:1px solid #c9dce8;background:rgba(255,255,255,.985);
+    border-radius:15px;box-shadow:0 18px 50px #12354955;
+    padding:19px 21px 22px;
+  }
+  #contexto h2{font-size:18px}
+  @media(max-width:640px){
+    #btnContexto{right:9px;top:60px;min-height:49px;padding:7px 10px;gap:8px;font-size:12px}
+    #btnContexto .ctx-icon{width:33px;height:33px;font-size:24px}
+    #btnContexto .ctx-label{max-width:114px}
+    #contexto{top:118px;right:9px;width:min(370px,calc(100vw - 18px));
+      max-height:calc(100dvh - 244px);padding:15px 16px;}
+  }
+  @media(max-height:510px){
+    #btnContexto{top:54px}
+    #contexto{top:115px;max-height:calc(100dvh - 182px)}
+  }
+
 </style>
 <script type="importmap">
 { "imports": {
@@ -194,7 +232,7 @@
 </div>
 
 
-<button id="btnContexto" type="button" aria-controls="contexto" aria-expanded="false">ⓘ Conoce este lugar</button>
+<button id="btnContexto" type="button" aria-controls="contexto" aria-expanded="false" aria-label="Abrir información del asentamiento"><span class="ctx-icon" aria-hidden="true">ⓘ</span><span class="ctx-label">Información del asentamiento</span></button>
 <aside id="contexto" hidden aria-label="Ficha informativa contextual del lugar" aria-live="polite"></aside>
 
 <div id="tiempo" class="oculto">
@@ -806,9 +844,12 @@ function abrirContexto(open) {
   contexto.hidden = !open;
   document.body.classList.toggle('contexto-abierto', open);
   btnContexto.setAttribute('aria-expanded', String(open));
-  btnContexto.textContent = open ? '× Cerrar información' : 'ⓘ Conoce este lugar';
+  btnContexto.querySelector('.ctx-icon').textContent = open ? '×' : 'ⓘ';
+  btnContexto.querySelector('.ctx-label').textContent = open ? 'Cerrar información' : 'Información del asentamiento';
+  btnContexto.setAttribute('aria-label', open ? 'Cerrar información del asentamiento' : 'Abrir información del asentamiento');
 }
 btnContexto.addEventListener('click', () => abrirContexto(contexto.hidden));
+if (P.get('info') === '1' && UI !== 'none') abrirContexto(true);
 document.addEventListener('keydown', e => { if(e.key === 'Escape' && !contexto.hidden) abrirContexto(false); });
 function renderizarContexto(s) {
   const p = PERFILES[s.nombre];
@@ -958,7 +999,8 @@ $('btnCopiar').addEventListener('click', async () => {
   if (exag !== 1.5) u.searchParams.set('exag', exag);
   if (!verEdif) u.searchParams.set('edif', '0');
   else if (fEdif !== 3) u.searchParams.set('fedif', fEdif);
-  u.searchParams.set('ui', 'min');
+  u.searchParams.set('ui', 'galeria');
+  u.searchParams.set('info', contexto.hidden ? '0' : '1');
   try { await navigator.clipboard.writeText(u.toString()); aviso('URL copiada'); }
   catch (e) { window.prompt('Copia esta URL:', u.toString()); }
 });
