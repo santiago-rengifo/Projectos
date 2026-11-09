@@ -878,7 +878,8 @@ function abrirContexto(open) {
   btnContexto.setAttribute('aria-label', open ? 'Cerrar información del asentamiento' : 'Abrir información del asentamiento');
 }
 btnContexto.addEventListener('click', () => abrirContexto(contexto.hidden));
-if (P.get('info') !== '0' && UI !== 'none') abrirContexto(true);
+// La ficha inicia siempre cerrada, incluso si StoryMaps conserva una URL antigua con info=1.
+// Se abre exclusivamente cuando la persona pulsa el botón informativo.
 document.addEventListener('keydown', e => { if(e.key === 'Escape' && !contexto.hidden) abrirContexto(false); });
 function renderizarContexto(s) {
   const p = PERFILES[s.nombre];
@@ -1029,7 +1030,7 @@ $('btnCopiar').addEventListener('click', async () => {
   if (!verEdif) u.searchParams.set('edif', '0');
   else if (fEdif !== 3) u.searchParams.set('fedif', fEdif);
   u.searchParams.set('ui', 'galeria');
-  u.searchParams.set('info', contexto.hidden ? '0' : '1');
+  // No trasladar el estado del panel a la URL: se cierra en cada carga.
   try { await navigator.clipboard.writeText(u.toString()); aviso('URL copiada'); }
   catch (e) { window.prompt('Copia esta URL:', u.toString()); }
 });
