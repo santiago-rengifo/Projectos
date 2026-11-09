@@ -131,7 +131,7 @@
   }));
   const byId = new Map(features.map(f=>[f.id,f]));
   const pairs = {nuevo:[9,10], aeropuerto:[11,12]};
-  let selectedId=10, activePair=null, filter="all", map, view, markerLayer, lineLayer, buildingsLayer=null, ready=false, focusMode="perspective", isLoadingBuildings=false;
+  let selectedId=10, activePair=null, filter="all", map, view, markerLayer, lineLayer, buildingsLayer=null, ready=false, focusMode="perspective", isLoadingBuildings=false, viewMode="3d";
   const el = id=>document.getElementById(id);
   const esc = val => String(val??"").replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const deg=n=>Number(n).toFixed(6);
@@ -180,7 +180,9 @@
     if(activePair)url.searchParams.set('comparar',activePair);else url.searchParams.delete('comparar');
     if(navigator.clipboard?.writeText)navigator.clipboard.writeText(url.href).then(()=>notify('Enlace del punto copiado.')).catch(()=>notify('El navegador no permitió copiar.'));else notify('La copia requiere HTTPS o localhost.');
   }
-  function markerSymbol(f){const sel=f.id===selectedId, inPair=!!activePair&&pairs[activePair].includes(f.id); const c=colorFor(f);
+  function markerSymbol(f){
+    const sel=f.id===selectedId, inPair=!!activePair&&pairs[activePair].includes(f.id), c=colorFor(f);
+    if(viewMode==='2d')return {type:'simple-marker',style:'circle',size:sel?19:(inPair?16:13),color:c,outline:{color:'#ffffff',width:2}};
     return {type:'point-3d',symbolLayers:[{type:'icon',resource:{primitive:'circle'},size:sel?23:(inPair?20:16),material:{color:c},outline:{color:'#ffffff',size:sel?3:2}}],verticalOffset:{screenLength:sel?38:27,minWorldLength:5,maxWorldLength:220},callout:{type:'line',color:c,size:1.25,border:{color:'#ffffff'}}};
   }
   function renderMarkers(){if(!ready)return;markerLayer.removeAll();
@@ -190,11 +192,15 @@
   function updateComparison(){if(!ready)return;lineLayer.removeAll();if(!activePair)return;const [a,b]=pairs[activePair].map(id=>byId.get(id));
     lineLayer.add(new Graphic({geometry:{type:'polyline',paths:[[[a.lon,a.lat],[b.lon,b.lat]]],spatialReference:{wkid:4326}},symbol:{type:'simple-line',color:'#e65e31',width:3,style:'dash'}}));
   }
-  async function flyToPoint(f){if(!ready)return;try{await view.goTo({center:[f.lon,f.lat],zoom:16,heading:25,tilt:focusMode==='top'?0:68},{duration:1300});}catch(e){if(e.name!=='AbortError')console.warn('No fue posible mover la cámara',e)}}
+  async function flyToPoint(f){if(!ready)return;try{
+    const target=viewMode==='2d'?{center:[f.lon,f.lat],zoom:16}:{center:[f.lon,f.lat],zoom:16,heading:25,tilt:focusMode==='top'?0:68};
+    await view.goTo(target,{duration:1300});
+  }catch(e){if(e.name!=='AbortError')console.warn('No fue posible mover la cámara',e)}}
   async function flyToPair(key){if(!ready||!pairs[key])return;const fs=pairs[key].map(id=>byId.get(id));try{
     const pts=fs.map(f=>new Graphic({geometry:{type:'point',longitude:f.lon,latitude:f.lat}}));
-    await view.goTo({target:pts,heading:25,tilt:focusMode==='top'?0:58},{duration:1450});
+    await view.goTo(viewMode==='2d'?{target:pts}:{target:pts,heading:25,tilt:focusMode==='top'?0:58},{duration:1450});
   }catch(e){if(e.name!=='AbortError')console.warn(e)}}
+
   function selectPoint(id, move=true){const f=byId.get(Number(id));if(!f)return;selectedId=f.id;activePair=null;
     renderList();renderInfo();renderMarkers();updateComparison();setQuery();
     if(move)flyToPoint(f);if(window.innerWidth<=620){el('sidebar').classList.remove('mobile-open');el('sidebarToggle').setAttribute('aria-expanded','false');}
@@ -204,7 +210,11 @@
     if(!enabled){if(buildingsLayer)buildingsLayer.visible=false;return;}
     if(buildingsLayer){buildingsLayer.visible=true;return;}
     isLoadingBuildings=true;notify('Cargando edificios 3D, según cobertura disponible…');
-    try{const layer=new SceneLayer({portalItem:{id:'b8fec5af7dfe4866b1b8ac2d2800f282'},title:'Esri 3D Buildings'});await layer.load();map.add(layer,0);buildingsLayer=layer;notify('Capa de edificios 3D activada. La disponibilidad depende de la zona.');}
+    try{
+    if(viewMode==='2d'){el('buildings').checked=false;notify('Los edificios requieren la vista 3D.');return;}
+    if(!SceneLayer)SceneLayer=await $arcgis.import('@arcgis/core/layers/SceneLayer.js');
+    const layer=new SceneLayer({portalItem:{id:'b8fec5af7dfe4866b1b8ac2d2800f282'},title:'Esri 3D Buildings'});await layer.load();map.add(layer,0);buildingsLayer=layer;notify('Capa de edificios 3D activada. La disponibilidad depende de la zona.');
+  }
     catch(err){el('buildings').checked=false;notify('Los edificios 3D no están disponibles sin acceso autorizado o cobertura. El terreno 3D sigue activo.');console.warn(err);}
     finally{isLoadingBuildings=false;}
   }
@@ -212,7 +222,7 @@
     el('summaryPoints').textContent=`${features.length} puntos · ${new Set(features.map(f=>f.name+'|'+f.city)).size} sitios`;
     el('search').addEventListener('input',renderList);
     document.querySelectorAll('[data-filter]').forEach(btn=>btn.addEventListener('click',()=>{filter=btn.dataset.filter;document.querySelectorAll('[data-filter]').forEach(b=>b.classList.toggle('active',b===btn));renderList()}));
-    el('basemap').onchange=event=>{if(!ready)return;map.basemap=(event.target.value==='osm'?osmBasemap:imageryBasemap);};
+    el('basemap').onchange=event=>{if(!ready)return;map.basemap=(event.target.value==='osm'?'osm':imageryBasemap);};
     el('buildings').onchange=event=>setBuildings(event.target.checked);
     el('resetview').onclick=()=>activePair?flyToPair(activePair):flyToPoint(byId.get(selectedId));
     el('topview').onclick=()=>{focusMode=focusMode==='top'?'perspective':'top';el('topview').textContent=focusMode==='top'?'◈ Oblicua':'↧ Cenital';activePair?flyToPair(activePair):flyToPoint(byId.get(selectedId));};
@@ -222,26 +232,55 @@
   const params=new URLSearchParams(window.location.search);const possible=Number(params.get('id'));if(byId.has(possible))selectedId=possible;
   if(pairs[params.get('comparar')]?.includes(selectedId))activePair=params.get('comparar');
   renderList();renderInfo();initializeUI();
-  let osmBasemap,imageryBasemap,Graphic,SceneLayer;
+  let imageryBasemap,Graphic,SceneLayer;
+  const errorText=err=>([err?.name,err?.message,err?.details?.message].filter(Boolean).join(': ')||String(err)).slice(0,700);
+  function errorCard(title,err){
+    el('loading').style.opacity='1';el('loading').style.display='grid';
+    el('loading').innerHTML='<div class="loading-card" style="max-width:520px;text-align:left"><p><b>'+esc(title)+'</b></p><small style="font-size:12px;color:#304b5e;word-break:break-word;white-space:pre-wrap">'+esc(errorText(err))+'</small><small>Prueba la página fuera de StoryMaps y comprueba que WebGL2 esté habilitado. Si ves un código de error, compártelo.</small><button type="button" id="retry3d" class="act" style="margin-top:12px">Reintentar 3D</button></div>';
+    el('retry3d').onclick=()=>{const url=new URL(window.location.href);url.searchParams.delete('vista');window.location.assign(url.href)};
+  }
+  async function activate(instance,mode){
+    view=instance;await view.when();viewMode=mode;ready=true;
+    try{renderMarkers();updateComparison()}catch(markerError){console.warn('No se dibujaron algunos puntos:',markerError)}
+    view.on('click',async evt=>{try{const hit=await view.hitTest(evt,{include:[markerLayer]});const point=hit.results.find(r=>r.graphic?.attributes?.id);if(point)selectPoint(point.graphic.attributes.id,false)}catch(e){console.warn('Identificación:',e)}});
+    el('loading').style.opacity='0';setTimeout(()=>{el('loading').style.display='none'},300);
+    if(mode==='2d'){el('buildings').checked=false;el('buildings').disabled=true;el('topview').disabled=true;el('topview').title='Inclinación no disponible en modo 2D';}
+    if(activePair)await flyToPair(activePair);else await flyToPoint(byId.get(selectedId));
+  }
+  async function fallback2d(reason){
+    console.warn('La escena 3D no pudo iniciarse. Abriendo vista 2D:',reason);
+    if(view){try{view.destroy()}catch(e){}view=null}
+    ready=false;viewMode='2d';
+    el('loading').innerHTML='<div class="loading-card"><span class="spinner"></span><p>3D no disponible. Cargando vista 2D…</p><small>'+esc(errorText(reason))+'</small></div>';
+    const MapView=await $arcgis.import('@arcgis/core/views/MapView.js');
+    const f=byId.get(selectedId);
+    await activate(new MapView({container:'viewDiv',map,center:[f.lon,f.lat],zoom:15,popupEnabled:false}),'2d');
+    notify('Vista 2D de respaldo: la escena 3D no pudo iniciarse. Prueba abrir la página directamente.');
+  }
   try{
-    const [MapClass, SceneViewClass, GraphicsLayerClass, GraphicClass, SceneLayerClass, BasemapClass, TileLayerClass, OpenStreetMapLayerClass] = await Promise.all([
-      '@arcgis/core/Map.js','@arcgis/core/views/SceneView.js','@arcgis/core/layers/GraphicsLayer.js','@arcgis/core/Graphic.js','@arcgis/core/layers/SceneLayer.js','@arcgis/core/Basemap.js','@arcgis/core/layers/TileLayer.js','@arcgis/core/layers/OpenStreetMapLayer.js'
-    ].map(m=>$arcgis.import(m)));
-    Graphic=GraphicClass;SceneLayer=SceneLayerClass;
+    if(!globalThis.$arcgis?.import)throw Error('No se cargó ArcGIS Maps SDK 5.1 desde js.arcgis.com. Revisa la conexión o el bloqueo de scripts.');
+    const [MapClass,SceneViewClass,GraphicsLayerClass,GraphicClass,BasemapClass,TileLayerClass]=await $arcgis.import([
+      '@arcgis/core/Map.js','@arcgis/core/views/SceneView.js','@arcgis/core/layers/GraphicsLayer.js',
+      '@arcgis/core/Graphic.js','@arcgis/core/Basemap.js','@arcgis/core/layers/TileLayer.js'
+    ]);
+    Graphic=GraphicClass;
     imageryBasemap=new BasemapClass({baseLayers:[new TileLayerClass({url:'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer',title:'World Imagery'})],title:'Satélite Esri'});
-    osmBasemap=new BasemapClass({baseLayers:[new OpenStreetMapLayerClass()],title:'OpenStreetMap'});
     markerLayer=new GraphicsLayerClass({title:'Puntos QA',elevationInfo:{mode:'relative-to-ground'}});
     lineLayer=new GraphicsLayerClass({title:'Distancia entre ubicaciones',elevationInfo:{mode:'on-the-ground'}});
     map=new MapClass({basemap:imageryBasemap,ground:'world-elevation',layers:[lineLayer,markerLayer]});
     const f=byId.get(selectedId);
-    view=new SceneViewClass({container:'viewDiv',map,center:[f.lon,f.lat],zoom:15,heading:25,tilt:68,qualityProfile:'medium',popupEnabled:false,ui:{components:['attribution','zoom','compass','navigation-toggle']}});
-    await view.when();ready=true;renderMarkers();updateComparison();
-    view.on('click',async evt=>{try{const hit=await view.hitTest(evt,{include:[markerLayer]});const point=hit.results.find(r=>r.graphic?.attributes?.id);if(point)selectPoint(point.graphic.attributes.id,false);}catch(e){console.warn('No se pudo identificar el punto',e)}});
-    el('loading').style.opacity='0';setTimeout(()=>{el('loading').style.display='none'},250);
-    if(activePair)await flyToPair(activePair);else await flyToPoint(byId.get(selectedId));
-  }catch(err){console.error('No se pudo iniciar el visor ArcGIS 3D:',err);
-    el('loading').innerHTML='<div class="loading-card"><p><b>No se pudo cargar la escena 3D.</b></p><small>Comprueba la conexión, la disponibilidad de los servicios de Esri y WebGL en el navegador. Los puntos están incluidos en este archivo.</small></div>';
+    if(new URLSearchParams(location.search).get('vista')==='2d'){
+      await fallback2d(new Error('Modo 2D solicitado mediante URL'));
+    }else{
+      try{
+        await activate(new SceneViewClass({container:'viewDiv',map,center:[f.lon,f.lat],zoom:15,heading:25,tilt:68,qualityProfile:'low',popupEnabled:false}),'3d');
+      }catch(sceneError){await fallback2d(sceneError)}
+    }
+  }catch(err){
+    console.error('Error al iniciar ArcGIS:',err);
+    errorCard('No se pudo cargar ArcGIS, ni en 3D ni en 2D.',err);
   }
+
  </script>
 </body>
 </html>
