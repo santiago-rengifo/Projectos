@@ -208,7 +208,7 @@
   function toggleCompare(key){activePair=(activePair===key?null:key);renderInfo();renderMarkers();updateComparison();setQuery();if(activePair)flyToPair(activePair);else flyToPoint(byId.get(selectedId));}
   // Uniforme sobre los modelos 3D: no se conservan texturas ni colores de fachadas.
   function styleBuildings(layer) {
-    if(!layer || !layer.renderer && layer===footprintLayer)return;
+    if(!layer)return;
     const color=el('buildingColor').value;
     if(layer===footprintLayer){
       layer.graphics.forEach(g=>{
