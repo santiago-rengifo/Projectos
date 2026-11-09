@@ -149,7 +149,7 @@
   .ctx-sources a{color:#075c8b;text-decoration:underline;overflow-wrap:anywhere}
   .ctx-note{margin-top:12px;font-size:10px;color:#687b89}
   .ctx-variant{display:block;width:100%;font:600 11px system-ui;margin-top:10px;padding:8px;border:1px solid #a8cadc;background:#eff8fc;border-radius:8px;color:#155b7a;cursor:pointer}
-  body.contexto-abierto #tiempo{display:none}
+  /* La ficha narrativa y el selector histórico ya no se ocultan mutuamente. */
   body.ui-none #btnContexto,body.ui-none #contexto{display:none!important}
   @media(max-width:640px){#btnContexto{top:57px;right:8px;padding:8px 11px;font-size:11px}
     #contexto{top:97px;right:8px;max-height:calc(100vh - 265px);width:calc(100vw - 16px);padding:13px 14px}
@@ -206,15 +206,26 @@
   width:min(395px,calc(100vw - 28px));
   max-height:calc(100dvh - 280px);z-index:39;
 }
-/* El selector histórico se coloca debajo del botón y se oculta al abrir la ficha. */
-#tiempo {top:151px;right:14px;}
-body.contexto-abierto #mini {left:12px !important;right:auto !important;}
+/* El selector de imagen histórica acompaña al panel de navegación, a la izquierda. */
+#tiempo {
+  left:12px !important;right:auto !important;top:110px;
+  width:min(215px,calc(100vw - 24px));box-sizing:border-box;
+  z-index:15;overflow-y:auto;overscroll-behavior:contain;
+}
+.panel {
+  max-height:max(125px,calc(100dvh - 365px));
+  overflow-y:auto;box-sizing:border-box;
+  z-index:16;
+}
+/* El minimapa queda al lado contrario para no tapar la selección histórica. */
+#mini {left:auto !important;right:12px !important;}
+body.contexto-abierto #mini {display:none;}
 @media(max-width:640px){
   #btnContexto{left:auto !important;right:9px !important;top:62px;min-width:0;min-height:52px;padding:6px 12px 6px 7px;}
   #btnContexto .ctx-icon{width:36px;height:36px;font-size:26px;}
   #btnContexto .ctx-label{max-width:125px;font-size:12px;}
   #contexto{left:auto !important;right:9px !important;top:124px;width:calc(100vw - 18px);max-height:calc(100dvh - 251px);}
-  #tiempo{top:auto;right:9px;bottom:150px;}
+  #tiempo{top:auto;left:9px !important;right:auto !important;bottom:150px;width:min(178px,calc(100vw - 18px));max-height:175px;}
 }
 @media(max-height:530px){
   #btnContexto{top:50px;}
@@ -1035,6 +1046,37 @@ $('btnCopiar').addEventListener('click', async () => {
   catch (e) { window.prompt('Copia esta URL:', u.toString()); }
 });
 actualizarBotonRotar();
+
+/* Alinea las imágenes históricas debajo de la navegación visible.
+   Si StoryMaps usa ui=galeria y oculta la navegación lateral, se colocan
+   debajo del título en el margen izquierdo. */
+function posicionarTiempo() {
+  const t = document.getElementById('tiempo');
+  if (!t) return;
+  if (window.innerWidth <= 640) {
+    t.style.removeProperty('top');
+    t.style.removeProperty('max-height');
+    return;
+  }
+  const nav = document.getElementById('panel');
+  const header = document.getElementById('cabecera');
+  const gal = document.getElementById('galeria');
+  const visible = el => el && getComputedStyle(el).display !== 'none' && el.getBoundingClientRect().height > 0;
+  const top = visible(nav)
+    ? Math.ceil(nav.getBoundingClientRect().bottom + 10)
+    : Math.max(110, Math.ceil((visible(header) ? header.getBoundingClientRect().bottom : 98) + 12));
+  const bottom = visible(gal) ? gal.getBoundingClientRect().top : window.innerHeight - 25;
+  t.style.top = top + 'px';
+  t.style.maxHeight = Math.max(70, Math.floor(bottom - top - 12)) + 'px';
+}
+window.addEventListener('resize', posicionarTiempo);
+if (typeof ResizeObserver !== 'undefined') {
+  const observer = new ResizeObserver(posicionarTiempo);
+  observer.observe(document.getElementById('panel'));
+  observer.observe(document.getElementById('cabecera'));
+  observer.observe(document.getElementById('galeria'));
+}
+posicionarTiempo();
 
 /* ---------- Imagen histórica (Esri World Imagery Wayback) ---------- */
 let wbCfg = null;
