@@ -1005,22 +1005,29 @@ function seleccionar(i) {
 
 // recorte circular de 500 m de la imagen satelital de cada sitio
 async function dibujarMiniaturas() {
-  for (let i = 0; i < SITIOS.length; i++) {
-    const s = SITIOS[i], z = 16;
-    try {
-      const im = await mosaico(s.lat, s.lon, RADIO, z,
-        (z, x, y) => `https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/${z}/${y}/${x}`, false);
-      const cx = lon2px(s.lon, z) - im.oX, cy = lat2px(s.lat, z) - im.oY;
-      const mpp = 156543.03392 * Math.cos(s.lat * Math.PI / 180) / 2 ** z;
-      const rp = RADIO / mpp;
-      const g = miniaturas[i].cv.getContext('2d');
-      g.save(); g.beginPath(); g.arc(70, 70, 70, 0, Math.PI * 2); g.clip();
-      g.drawImage(im.canvas, cx - rp, cy - rp, 2 * rp, 2 * rp, 0, 0, 140, 140);
-      g.restore();
-      g.fillStyle = '#d64545'; g.beginPath(); g.arc(70, 70, 5, 0, Math.PI * 2); g.fill();
-      g.strokeStyle = '#fff'; g.lineWidth = 2; g.stroke();
-    } catch (e) { console.warn('Miniatura sin imagen', s.nombre, e); }
+  // 28 miniaturas ligeras: una sola tesela central por sitio en vez de
+  // mosaicos de varias teselas de 500 m, con máximo tres cargas concurrentes.
+  let siguiente=0;
+  async function procesar(){
+    while(siguiente<SITIOS.length){
+      const i=siguiente++,sitio=SITIOS[i],zoom=16;
+      const px=lon2px(sitio.lon,zoom),py=lat2px(sitio.lat,zoom);
+      const tx=Math.floor(px/256),ty=Math.floor(py/256);
+      try{
+        const img=await cargarImg(`https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/${zoom}/${ty}/${tx}`);
+        const cv=miniaturas[i].cv,g=cv.getContext('2d');
+        g.save();g.beginPath();g.arc(70,70,70,0,Math.PI*2);g.clip();
+        const ox=px-tx*256,oy=py-ty*256;
+        // Recorte orientativo alrededor del punto; no expresa extensión del caso.
+        const size=190;
+        g.drawImage(img,ox-size/2,oy-size/2,size,size,0,0,140,140);
+        g.restore();
+        g.fillStyle='#d64545';g.beginPath();g.arc(70,70,5,0,Math.PI*2);g.fill();
+        g.strokeStyle='#fff';g.lineWidth=2;g.stroke();
+      }catch(e){console.warn('Miniatura no disponible:',sitio.nombre,e)}
+    }
   }
+  await Promise.all([procesar(),procesar(),procesar()]);
 }
 marcarActiva();
 
