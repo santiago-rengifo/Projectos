@@ -20,6 +20,21 @@
 @media(max-width:760px){.wrap{padding:20px 14px 18px}.layout{display:block}.center{margin-top:30px}.right{display:grid;grid-template-columns:1fr;margin-top:24px}.metric-grid{grid-template-columns:1fr}.wide{grid-template-columns:145px 1fr}.survey-title{text-align:left;margin-left:48px}.survey-row{grid-template-columns:32px 72px minmax(0,1fr);column-gap:12px}.survey-row svg{width:29px;height:29px}.survey-row strong{width:72px;font-size:1.82rem}.survey-row .label{font-size:1rem;line-height:1.12}.narratives{margin-top:34px;gap:20px}.filters{flex-wrap:nowrap;overflow-x:auto;padding-bottom:4px;max-width:100%}.filter{white-space:nowrap}}
 @media(max-width:430px){.survey-title{margin-left:0;text-align:center;font-size:1.12rem}.survey-list{gap:15px}.survey-row{grid-template-columns:28px 64px minmax(0,1fr);column-gap:10px;align-items:start}.survey-row svg{width:25px;height:25px;margin-top:3px}.survey-row strong{width:64px;font-size:1.62rem;line-height:1}.survey-row .label{font-size:.94rem;line-height:1.12}.wide{grid-template-columns:1fr}.pictos{max-width:220px}.world,.odsbox{grid-template-columns:78px 1fr;text-align:left}.globe,.ods{width:72px;height:72px;margin:0}}
 @media(prefers-reduced-motion:reduce){*{transition:none!important}}
+/* Planeta Tierra reconocible y autónomo, sin dependencias externas */
+.globe-svg{display:block;width:82px;height:82px;overflow:visible;flex:none;filter:drop-shadow(0 2px 2px rgba(7,75,120,.13))}
+.world{grid-template-columns:92px minmax(0,1fr)}
+@media(max-width:1080px){.world{grid-template-columns:1fr}.globe-svg{margin:auto}}
+@media(max-width:430px){.world{grid-template-columns:78px minmax(0,1fr)}.globe-svg{width:72px;height:72px;margin:0}}
+/* Pie bibliográfico dentro del módulo, accesible en el scroll de StoryMaps */
+.sources{border-top:1px solid #d4e7f1;margin-top:30px;padding:16px 0 3px;color:#526475}
+.sources h2{font-size:14px;letter-spacing:.01em;margin:0 0 9px;color:#153f5d}
+.sources-list{display:flex;flex-wrap:wrap;gap:7px 18px;margin:0;padding:0;list-style:none}
+.sources-list li{font-size:12px;line-height:1.5}
+.sources-list a{color:#065b90;font-weight:600;text-decoration:underline;text-underline-offset:2px}
+.sources-list a:hover{color:#003f68}
+.sources p{margin:10px 0 0;font-size:11px;line-height:1.45;color:#60717f;max-width:1100px}
+@media(max-width:760px){.sources{margin-top:24px;padding-top:14px}.sources-list{display:block}.sources-list li+li{margin-top:5px}}
+
 </style>
 </head>
 <body>
@@ -41,8 +56,55 @@
 <button class="wide topic" type="button" data-topic="pobreza"><div class="pictos"><span class="picto"><svg viewBox="0 0 50 45"><path d="M8 26h34c0 8-6 13-17 13S8 34 8 26zM13 22l7-5m1 5 7-7m1 7 7-5"/></svg></span><span class="picto"><svg viewBox="0 0 50 45"><path d="M8 26h34c0 8-6 13-17 13S8 34 8 26zM13 22l7-5m1 5 7-7m1 7 7-5"/></svg></span><span class="picto"><svg viewBox="0 0 50 45"><path d="M8 26h34c0 8-6 13-17 13S8 34 8 26zM13 22l7-5m1 5 7-7m1 7 7-5"/></svg></span><span class="picto"><svg viewBox="0 0 50 45"><path d="M8 26h34c0 8-6 13-17 13S8 34 8 26zM13 22l7-5m1 5 7-7m1 7 7-5"/></svg></span><span class="picto"><svg viewBox="0 0 50 45"><path d="M8 26h34c0 8-6 13-17 13S8 34 8 26zM13 22l7-5m1 5 7-7m1 7 7-5"/></svg></span><span class="picto"><svg viewBox="0 0 50 45"><path d="M8 26h34c0 8-6 13-17 13S8 34 8 26zM13 22l7-5m1 5 7-7m1 7 7-5"/></svg></span><span class="picto on"><svg viewBox="0 0 50 45"><path d="M8 26h34c0 8-6 13-17 13S8 34 8 26zM13 22l7-5m1 5 7-7m1 7 7-5"/></svg></span><span class="picto on"><svg viewBox="0 0 50 45"><path d="M8 26h34c0 8-6 13-17 13S8 34 8 26zM13 22l7-5m1 5 7-7m1 7 7-5"/></svg></span><span class="picto on"><svg viewBox="0 0 50 45"><path d="M8 26h34c0 8-6 13-17 13S8 34 8 26zM13 22l7-5m1 5 7-7m1 7 7-5"/></svg></span><span class="picto on"><svg viewBox="0 0 50 45"><path d="M8 26h34c0 8-6 13-17 13S8 34 8 26zM13 22l7-5m1 5 7-7m1 7 7-5"/></svg></span></div><div class="wide-copy"><span class="num">55%</span><b>de los hogares desplazados expuestos a inseguridad alimentaria**</b></div></button></section>
 <aside class="right">
 <button class="side poverty topic" type="button" data-topic="pobreza"><div class="people"><span class="person"><svg viewBox="0 0 34 62"><circle cx="17" cy="8" r="6"/><path d="M11 16h12l5 18-5 2-3-10v30h-6V37h-3v19H5V26L2 36l-5-2 7-18z"/></svg></span><span class="person"><svg viewBox="0 0 34 62"><circle cx="17" cy="8" r="6"/><path d="M11 16h12l5 18-5 2-3-10v30h-6V37h-3v19H5V26L2 36l-5-2 7-18z"/></svg></span><span class="person"><svg viewBox="0 0 34 62"><circle cx="17" cy="8" r="6"/><path d="M11 16h12l5 18-5 2-3-10v30h-6V37h-3v19H5V26L2 36l-5-2 7-18z"/></svg></span><span class="person"><svg viewBox="0 0 34 62"><circle cx="17" cy="8" r="6"/><path d="M11 16h12l5 18-5 2-3-10v30h-6V37h-3v19H5V26L2 36l-5-2 7-18z"/></svg></span><span class="person"><svg viewBox="0 0 34 62"><circle cx="17" cy="8" r="6"/><path d="M11 16h12l5 18-5 2-3-10v30h-6V37h-3v19H5V26L2 36l-5-2 7-18z"/></svg></span><span class="person"><svg viewBox="0 0 34 62"><circle cx="17" cy="8" r="6"/><path d="M11 16h12l5 18-5 2-3-10v30h-6V37h-3v19H5V26L2 36l-5-2 7-18z"/></svg></span><span class="person"><svg viewBox="0 0 34 62"><circle cx="17" cy="8" r="6"/><path d="M11 16h12l5 18-5 2-3-10v30h-6V37h-3v19H5V26L2 36l-5-2 7-18z"/></svg></span><span class="person"><svg viewBox="0 0 34 62"><circle cx="17" cy="8" r="6"/><path d="M11 16h12l5 18-5 2-3-10v30h-6V37h-3v19H5V26L2 36l-5-2 7-18z"/></svg></span><span class="person"><svg viewBox="0 0 34 62"><circle cx="17" cy="8" r="6"/><path d="M11 16h12l5 18-5 2-3-10v30h-6V37h-3v19H5V26L2 36l-5-2 7-18z"/></svg></span><span class="person on"><svg viewBox="0 0 34 62"><circle cx="17" cy="8" r="6"/><path d="M11 16h12l5 18-5 2-3-10v30h-6V37h-3v19H5V26L2 36l-5-2 7-18z"/></svg></span></div><span class="num">96%</span><b>de la población desplazada se encuentra en situación de pobreza**</b></button>
-<button class="side world topic" type="button" data-topic="desplazamiento"><span class="globe"></span><div><div class="rank">5to</div><p>país con mayor desplazamiento forzado interno en el mundo.****</p></div></button>
+<button class="side world topic" type="button" data-topic="desplazamiento"><svg class="globe-svg" viewBox="0 0 100 100" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <radialGradient id="oceanEarth" cx="35%" cy="27%" r="81%">
+      <stop offset="0" stop-color="#46c4f0"/>
+      <stop offset=".57" stop-color="#008ac9"/>
+      <stop offset="1" stop-color="#075784"/>
+    </radialGradient>
+    <linearGradient id="landEarth" x1="0" y1="0" x2=".8" y2="1">
+      <stop offset="0" stop-color="#a9d565"/>
+      <stop offset=".66" stop-color="#65b760"/>
+      <stop offset="1" stop-color="#3a9864"/>
+    </linearGradient>
+    <clipPath id="earthClip"><circle cx="50" cy="50" r="47"/></clipPath>
+  </defs>
+  <circle cx="50" cy="50" r="47" fill="url(#oceanEarth)"/>
+  <g clip-path="url(#earthClip)" fill="none" stroke="#c5effa" stroke-width=".85" opacity=".37">
+    <ellipse cx="50" cy="50" rx="19" ry="47"/>
+    <ellipse cx="50" cy="50" rx="37" ry="47"/>
+    <path d="M3 50H97M6 33Q50 42 94 33M6 67Q50 58 94 67"/>
+  </g>
+  <g clip-path="url(#earthClip)" fill="url(#landEarth)" stroke="#2f955f" stroke-width=".5" stroke-linejoin="round">
+    <!-- América del Norte: Alaska, Canadá, Estados Unidos y Mesoamérica -->
+    <path d="M7 17 16 10 29 10 34 16 44 15 49 19 46 24 41 25 37 31 31 33 31 39 36 42 33 47 29 45 27 51 23 48 22 41 16 39 14 33 9 32 5 24Z"/>
+    <path d="M32 43 39 45 42 50 47 52 50 57 46 59 43 55 39 54 36 48Z"/>
+    <!-- América del Sur, visible de extremo a extremo -->
+    <path d="M45 56 51 54 58 56 63 62 61 69 57 75 56 82 52 88 49 94 45 89 44 81 40 75 41 68 39 63Z"/>
+    <!-- Groenlandia, islas del Caribe -->
+    <path d="M42 9 49 5 55 7 55 13 51 17 47 15Z"/>
+    <path d="M50 52 54 52 56 54 52 55Z"/>
+    <!-- Fragmentos visibles de Europa y África en el borde derecho -->
+    <path d="M81 28 89 23 100 25 102 48 96 49 92 43 85 42 83 36Z"/>
+    <path d="M88 48 97 49 101 61 96 76 91 83 87 70 84 60Z"/>
+  </g>
+  <circle cx="50" cy="50" r="47" fill="none" stroke="#06658f" stroke-width="1.3"/>
+  <path d="M19 17Q7 36 13 58" fill="none" stroke="#fff" stroke-opacity=".28" stroke-width="3" stroke-linecap="round"/>
+</svg><div><div class="rank">5to</div><p>país con mayor desplazamiento forzado interno en el mundo.****</p></div></button>
 <button class="side odsbox topic" type="button" data-topic="pobreza"><span class="ods"></span><div><div class="ods-big">4 de cada 5</div><p>hogares desplazados viven en pobreza, representando cerca del 50% de toda la población pobre del país.*****</p></div></button></aside>
-</section></main>
+</section>
+<footer class="sources" aria-label="Fuentes de los indicadores">
+  <h2>Fuentes y referencias</h2>
+  <ul class="sources-list">
+    <li><a href="https://www.acnur.org/noticias/comunicados-de-prensa/la-iv-encuesta-sobre-desplazamiento-en-colombia-revela-la-necesidad" target="_blank" rel="noopener noreferrer">IV Encuesta Nacional de Verificación (2023; publicación 2024)</a></li>
+    <li><a href="https://data.unhcr.org/es/country/col" target="_blank" rel="noopener noreferrer">ACNUR · Datos de desplazamiento interno en Colombia</a></li>
+    <li><a href="https://www.internal-displacement.org/countries/colombia/" target="_blank" rel="noopener noreferrer">IDMC · Perfil de desplazamiento interno de Colombia</a></li>
+    <li><a href="https://www.dane.gov.co/index.php/estadisticas-por-tema/salud/escala-de-experiencia-de-inseguridad-alimentaria-fies" target="_blank" rel="noopener noreferrer">DANE · Inseguridad alimentaria (FIES)</a></li>
+    <li><a href="https://codhes.org/2024/04/27/la-iv-encuesta-sobre-desplazamiento-en-colombia-revela-la-necesidad-de-avanzar-hacia-soluciones-duraderas-para-la-poblacion-desplazada/" target="_blank" rel="noopener noreferrer">CODHES · Resultados de la IV Encuesta</a></li>
+  </ul>
+  <p>Las referencias reúnen fuentes de distintos años, universos y metodologías. Los valores de esta visualización conservan sus cifras originales; para su uso institucional se debe comprobar el corte y la correspondencia de cada indicador con su fuente primaria.</p>
+</footer>
+</main>
 <script>(()=>{const root=document.querySelector('.wrap');const selectable=[...root.querySelectorAll('.metric,.wide,.side')];const topics=[...root.querySelectorAll('.topic')];const filters=[...root.querySelectorAll('.filter')];selectable.forEach(el=>el.addEventListener('click',()=>{selectable.forEach(x=>x.classList.remove('selected'));el.classList.add('selected')}));filters.forEach(btn=>btn.addEventListener('click',()=>{const f=btn.dataset.filter;filters.forEach(x=>x.classList.toggle('active',x===btn));topics.forEach(el=>{const values=(el.dataset.topic||'').split(/\s+/);el.classList.toggle('dimmed',f!=='all'&&!values.includes(f))})}))})();</script>
 </body></html>
