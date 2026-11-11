@@ -667,7 +667,6 @@ body.sin-galeria #dock #galeria { display: none !important; }
     <div class="btns">
       <button id="btnVista" type="button">Restablecer vista</button>
       <button id="btnRotar" type="button">Pausar giro</button>
-      <button id="btnCopiar" type="button">Copiar URL para StoryMap</button>
     </div>
   </div>
 </div>
@@ -1460,19 +1459,6 @@ const rng = $('exag'); rng.value = exag;
 rng.addEventListener('input', () => { exag = +rng.value; aplicarExag(); });
 $('btnVista').addEventListener('click', vistaInicial);
 $('btnRotar').addEventListener('click', () => { controls.autoRotate = !controls.autoRotate; actualizarBotonRotar(); });
-$('btnCopiar').addEventListener('click', async () => {
-  const u = new URL(location.href.split('?')[0]);
-  if (actual >= 0) u.searchParams.set('sitio', SITIOS[actual].originalIndex);
-  else { u.searchParams.set('lat', sitioLibre.lat); u.searchParams.set('lon', sitioLibre.lon); }
-  if (RADIO !== 500) u.searchParams.set('r', RADIO);
-  if (exag !== 1.5) u.searchParams.set('exag', exag);
-  if (!verEdif) u.searchParams.set('edif', '0');
-  else if (fEdif !== 3) u.searchParams.set('fedif', fEdif);
-  u.searchParams.set('ui', 'galeria');
-  // No trasladar el estado del panel a la URL: se cierra en cada carga.
-  try { await navigator.clipboard.writeText(u.toString()); aviso('URL copiada'); }
-  catch (e) { window.prompt('Copia esta URL:', u.toString()); }
-});
 actualizarBotonRotar();
 
 /* Navegación en una banda independiente: jamás cubre el diorama.
