@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <meta name="description" content="Pictograma de 15.000 personas refugiadas y migrantes: cada figura representa a 1.000 personas. Visualización independiente para ArcGIS StoryMaps.">
+  <title>15.000 refugiados y migrantes · Pictograma</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --blue: #0072bc;
+      --blue-dark: #07527e;
+      --ink: #132b3b;
+      --muted: #425466;
+      --bg: #fff;
+      --line: #dceaf4;
+    }
+    *, *::before, *::after { box-sizing: border-box; }
+    html, body { margin: 0; width: 100%; background: var(--bg); }
+    body {
+      font-family: Arial, Helvetica, sans-serif;
+      color: var(--ink);
+      -webkit-font-smoothing: antialiased;
+    }
+    .graphic {
+      width: 100%;
+      max-width: 880px;
+      margin: 0 auto;
+      padding: clamp(16px, 3.2vw, 30px) clamp(14px, 3.5vw, 36px) clamp(18px, 3vw, 30px);
+    }
+    header { text-align: center; }
+    h1 {
+      margin: 0;
+      font-size: clamp(21px, 3.6vw, 34px);
+      line-height: 1.14;
+      font-weight: 700;
+      letter-spacing: -.025em;
+    }
+    h1 strong { font-weight: 800; color: var(--blue-dark); }
+    .legend {
+      margin: 16px auto 22px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      color: var(--ink);
+      font-size: clamp(14px, 2.15vw, 18px);
+      font-weight: 500;
+      line-height: 1.3;
+      text-align: left;
+    }
+    /* The legend icon is deliberately large. It does not inherit the grid icon size. */
+    .legend-icon {
+      display: block;
+      width: 30px;
+      height: 50px;
+      flex: 0 0 30px;
+      color: var(--blue);
+    }
+    .legend strong { color: var(--blue-dark); font-weight: 800; }
+    .pictogram {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      column-gap: clamp(5px, 2.4vw, 22px);
+      row-gap: clamp(11px, 2.4vw, 22px);
+      align-items: center;
+      justify-items: center;
+      width: 100%;
+      padding: 2px 0 0;
+    }
+    .person {
+      display: block;
+      width: clamp(43px, 8.2vw, 69px);
+      height: auto;
+      aspect-ratio: 48 / 80;
+      color: var(--blue);
+      overflow: visible;
+    }
+    .footnote {
+      margin: 18px 0 0;
+      text-align: center;
+      font-size: 12px;
+      color: var(--muted);
+      line-height: 1.4;
+    }
+    @media (max-width: 390px) {
+      .graphic { padding: 14px 10px 20px; }
+      h1 { font-size: 20px; }
+      .legend { margin: 12px auto 17px; gap: 9px; font-size: 13px; }
+      .legend-icon { width: 28px; height: 46px; flex-basis: 28px; }
+      .person { width: clamp(38px, 11vw, 47px); }
+      .pictogram { column-gap: 4px; row-gap: 10px; }
+    }
+    @media (max-width: 310px) {
+      .pictogram { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+      .person { width: 47px; }
+    }
+  </style>
+</head>
+<body>
+  <!-- Icono vectorial único, reutilizado en leyenda y pictograma. -->
+  <svg xmlns="http://www.w3.org/2000/svg" width="0" height="0"
+       style="position:absolute;overflow:hidden" aria-hidden="true" focusable="false">
+    <symbol id="persona-refugiada" viewBox="0 0 48 80">
+      <circle cx="17" cy="10" r="8" fill="currentColor"/>
+      <path d="M13 22h13c3.2 0 5.5 2.5 5.5 5.6v26.2c0 3-2.3 5.2-5.2 5.2H11c-3 0-5.3-2.2-5.3-5.2V29.5C5.7 25.2 8.4 22 13 22Z"
+            fill="currentColor"/>
+      <path d="M30 32h11V15" fill="none" stroke="currentColor" stroke-width="7"
+            stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M15 56 11 76M24 56l4 20" fill="none" stroke="currentColor"
+            stroke-width="6.5" stroke-linecap="round" stroke-linejoin="round"/>
+    </symbol>
+  </svg>
+
+  <main class="graphic" aria-label="Infografía de población refugiada y migrante">
+    <header>
+      <h1><strong>15.000</strong> Refugiados y Migrantes</h1>
+    </header>
+    <div class="legend" aria-label="Cada figura representa mil refugiados y migrantes">
+      <svg class="legend-icon" viewBox="0 0 48 80" aria-hidden="true" focusable="false">
+        <use href="#persona-refugiada"></use>
+      </svg>
+      <span>= <strong>1.000</strong> Refugiados y Migrantes</span>
+    </div>
+    <section class="pictogram" role="img"
+             aria-label="Quince figuras azules organizadas en tres filas de cinco. Cada una equivale a mil personas, para un total de quince mil refugiados y migrantes.">
+      <svg class="person" viewBox="0 0 48 80" aria-hidden="true"><use href="#persona-refugiada"></use></svg>
+      <svg class="person" viewBox="0 0 48 80" aria-hidden="true"><use href="#persona-refugiada"></use></svg>
+      <svg class="person" viewBox="0 0 48 80" aria-hidden="true"><use href="#persona-refugiada"></use></svg>
+      <svg class="person" viewBox="0 0 48 80" aria-hidden="true"><use href="#persona-refugiada"></use></svg>
+      <svg class="person" viewBox="0 0 48 80" aria-hidden="true"><use href="#persona-refugiada"></use></svg>
+      <svg class="person" viewBox="0 0 48 80" aria-hidden="true"><use href="#persona-refugiada"></use></svg>
+      <svg class="person" viewBox="0 0 48 80" aria-hidden="true"><use href="#persona-refugiada"></use></svg>
+      <svg class="person" viewBox="0 0 48 80" aria-hidden="true"><use href="#persona-refugiada"></use></svg>
+      <svg class="person" viewBox="0 0 48 80" aria-hidden="true"><use href="#persona-refugiada"></use></svg>
+      <svg class="person" viewBox="0 0 48 80" aria-hidden="true"><use href="#persona-refugiada"></use></svg>
+      <svg class="person" viewBox="0 0 48 80" aria-hidden="true"><use href="#persona-refugiada"></use></svg>
+      <svg class="person" viewBox="0 0 48 80" aria-hidden="true"><use href="#persona-refugiada"></use></svg>
+      <svg class="person" viewBox="0 0 48 80" aria-hidden="true"><use href="#persona-refugiada"></use></svg>
+      <svg class="person" viewBox="0 0 48 80" aria-hidden="true"><use href="#persona-refugiada"></use></svg>
+      <svg class="person" viewBox="0 0 48 80" aria-hidden="true"><use href="#persona-refugiada"></use></svg>
+    </section>
+    <p class="footnote">Representación proporcional: 1 figura = 1.000 personas.</p>
+  </main>
+</body>
+</html>
