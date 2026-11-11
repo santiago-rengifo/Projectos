@@ -450,6 +450,49 @@ body.sin-galeria #dock #galeria { display: none !important; }
   .attr { display: none; }
 }
 
+
+/* Cronología: círculos en carril superior y años en carril inferior.
+   Evita que números y puntos se superpongan en iframes de StoryMaps. */
+#dock { max-height: min(60dvh, 245px); }
+#dock #tiempo .anios {
+  min-height: 78px !important;
+  align-items: stretch;
+  padding: 4px 0 5px !important;
+  overflow-y: hidden;
+}
+#dock #tiempo .anios::before {
+  top: 21px !important;
+  height: 2px;
+}
+#dock #tiempo .anios button,
+#dock #tiempo .anios button.activo {
+  min-width: 67px;
+  min-height: 68px;
+  align-self: stretch;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  align-items: center;
+  padding: 42px 9px 7px !important;
+  line-height: 17px !important;
+  font-size: 12px;
+  white-space: nowrap;
+}
+#dock #tiempo .anios button::before {
+  top: 13px !important;
+  width: 17px;
+  height: 17px;
+  border-width: 3px;
+}
+@media (max-width: 640px) {
+  #dock #tiempo .anios button,
+  #dock #tiempo .anios button.activo {
+    min-width: 62px;
+    padding: 42px 6px 6px !important;
+    font-size: 11px;
+  }
+}
+
 </style>
 <script type="importmap">
 { "imports": {
