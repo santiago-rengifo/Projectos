@@ -232,6 +232,110 @@ body.contexto-abierto #mini {display:none;}
   #contexto{top:112px;max-height:calc(100dvh - 180px);}
 }
 
+/* ---- StoryMaps | línea de tiempo horizontal y ficha pública limpia ---- */
+#chips, #fuenteRevision, #coords, #obsBox, #cabecera .meta,
+.ctx-warning, .ctx-variant, .ctx-note { display: none !important; }
+#cabecera .sub { font-size: 13px; margin-top: 4px; }
+#tiempo {
+  position: absolute !important;
+  left: 50% !important;
+  right: auto !important;
+  top: auto !important;
+  transform: translateX(-50%);
+  width: min(760px, calc(100vw - 28px)) !important;
+  max-width: none !important;
+  max-height: none !important;
+  padding: 10px 16px 11px;
+  border: 1px solid #cde1ed;
+  border-radius: 16px;
+  background: rgba(255,255,255,.97);
+  box-shadow: 0 5px 20px rgba(7,57,91,.14);
+  z-index: 20;
+  overflow: visible !important;
+  overscroll-behavior: contain;
+}
+#tiempo .tit { color: #164766; font-size: 12px; font-weight: 750; text-align: center; margin: 0 0 3px; }
+#tiempo .anios {
+  display: flex;
+  flex-wrap: nowrap !important;
+  justify-content: safe center;
+  gap: 5px;
+  align-items: center;
+  position: relative;
+  overflow-x: auto;
+  max-width: 100%;
+  min-height: 57px;
+  padding: 4px 2px 6px;
+  scrollbar-width: thin;
+}
+#tiempo .anios::before {
+  content: "";
+  position: absolute;
+  left: 25px;
+  right: 25px;
+  top: 19px;
+  height: 2px;
+  background: #b8d6e8;
+  pointer-events: none;
+}
+#tiempo .anios button {
+  flex: 0 0 auto;
+  min-width: 64px;
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  padding: 28px 9px 5px;
+  border: 0;
+  border-radius: 9px;
+  background: transparent;
+  color: #436277;
+  font-size: 12px;
+  font-weight: 650;
+  z-index: 1;
+}
+#tiempo .anios button::before {
+  content: "";
+  position: absolute;
+  top: 8px;
+  left: 50%;
+  width: 15px;
+  height: 15px;
+  transform: translateX(-50%);
+  background: #fff;
+  border: 3px solid #60a2c8;
+  border-radius: 50%;
+  box-shadow: 0 0 0 3px #fff;
+}
+#tiempo .anios button:hover { color: #005a90; background: #eaf6fc; }
+#tiempo .anios button.activo {
+  background: #e4f3fd;
+  color: #005b92;
+  border: 0;
+  font-weight: 800;
+}
+#tiempo .anios button.activo::before { background: #0072bc; border-color: #0072bc; }
+#tiempo .anios button:focus-visible { outline: 3px solid #0072bc; outline-offset: -2px; }
+#tiempo .nota {
+  color: #617a8b;
+  font-size: 10px;
+  line-height: 1.25;
+  text-align: center;
+  margin: 2px 0 0;
+  min-height: 12px;
+}
+#tiempo.oculto { display: none !important; }
+@media (max-width: 640px) {
+  #tiempo { width: calc(100vw - 18px) !important; left:50% !important; right:auto !important; padding:9px 9px 8px; }
+  #tiempo .anios { justify-content: flex-start; }
+  #tiempo .anios button { min-width:58px; font-size:11px; }
+  #tiempo .tit { font-size:11px; }
+}
+@media (max-height: 470px) {
+  #tiempo { padding-top: 5px; padding-bottom: 5px; }
+  #tiempo .anios { min-height: 48px; }
+}
+
 </style>
 <script type="importmap">
 { "imports": {
@@ -276,8 +380,8 @@ body.contexto-abierto #mini {display:none;}
 <aside id="contexto" hidden aria-label="Ficha informativa contextual del lugar" aria-live="polite"></aside>
 
 <div id="tiempo" class="oculto">
-  <div class="tit">Imagen satelital</div>
-  <div class="anios" id="anios"></div>
+  <div class="tit">Imágenes satelitales · línea de tiempo</div>
+  <div class="anios" id="anios" role="group" aria-label="Seleccionar imagen histórica"></div>
   <div class="nota" id="notaTiempo"></div>
 </div>
 <div id="mini" aria-hidden="true"></div>
@@ -347,14 +451,26 @@ const bg = (P.get('bg') || '').toLowerCase();
 if (bg === 'transparent') document.body.classList.add('bg-transparent');
 else if (/^[0-9a-f]{6}$/.test(bg)) document.body.style.background = '#' + bg;
 
-/* ---------- Lista de sitios ---------- */
-const nombres = DATOS.map(d => d.nombre);
-const SITIOS = DATOS.map(d => ({
-  ...d,
-  etiqueta: nombres.filter(n => n === d.nombre).length > 1 ? `${d.nombre} (${d.variante})` : d.nombre
-}));
+/* Galería pública: una vista por asentamiento, conservando la primera
+   variante de cada lugar. En Antiguo Aeropuerto esto mantiene el
+   primer diorama, donde se distingue la pista.
+   La información de QA permanece en DATOS, sin presentarse al visitante.
+   mapaOriginal conserva la compatibilidad con antiguas URL ?sitio=. */
+const normalizarLugar = v => String(v ?? '').normalize('NFD')
+  .replace(/[\u0300-\u036f]/g,'').toLocaleLowerCase('es').trim().replace(/\s+/g,' ');
+const SITIOS = [];
+const mapaOriginal = [];
+const indicePorLugar = new Map();
+DATOS.forEach((registro, indiceOriginal) => {
+  const clave = normalizarLugar(registro.nombre) + '|' + normalizarLugar(registro.municipio);
+  if (!indicePorLugar.has(clave)) {
+    indicePorLugar.set(clave, SITIOS.length);
+    SITIOS.push({ ...registro, etiqueta: registro.nombre, originalIndex: indiceOriginal + 1 });
+  }
+  mapaOriginal[indiceOriginal] = indicePorLugar.get(clave);
+});
 
-let sitioIdx = clamp(Math.round(num('sitio', 1)) - 1, 0, SITIOS.length - 1);
+let sitioIdx = mapaOriginal[clamp(Math.round(num('sitio', 1)) - 1, 0, DATOS.length - 1)] ?? 0;
 let sitioLibre = null;
 if (Number.isFinite(parseFloat(P.get('lat'))) && Number.isFinite(parseFloat(P.get('lon')))) {
   sitioLibre = {
@@ -894,30 +1010,24 @@ btnContexto.addEventListener('click', () => abrirContexto(contexto.hidden));
 document.addEventListener('keydown', e => { if(e.key === 'Escape' && !contexto.hidden) abrirContexto(false); });
 function renderizarContexto(s) {
   const p = PERFILES[s.nombre];
-  if(!p) return;
-  const metr = p.cifras.length ? `<div class="ctx-h">Datos documentados</div><div class="ctx-metrics">${p.cifras.map(([val,lab])=>`<div class="ctx-metric"><strong>${escapeCtx(val)}</strong><span>${escapeCtx(lab)}</span></div>`).join('')}</div>` : '';
-  const cron = p.hitos.length ? `<div class="ctx-h">Antecedentes e hitos</div><ol class="ctx-timeline">${p.hitos.map(([when,what])=>`<li><b>${escapeCtx(when)}</b>${escapeCtx(what)}</li>`).join('')}</ol>` : '';
-  const fuentes = p.fuentes.length ? `<div class="ctx-h">Fuentes públicas</div><ul class="ctx-sources">${p.fuentes.map(([tit,url])=>`<li><a href="${escapeCtx(url)}" target="_blank" rel="noopener noreferrer">${escapeCtx(tit)}</a></li>`).join('')}</ul>` : '<p class="ctx-note">No hay una ficha externa comprobada para este registro genérico.</p>';
-  const idxAlterno = SITIOS.findIndex((d,i)=> i !== actual && d.nombre === s.nombre && d.variante !== s.variante);
-  contexto.innerHTML = `<div class="ctx-tag">Ficha territorial · Fuentes contrastadas</div><h2>${escapeCtx(s.nombre)}</h2>
-    <div class="ctx-tag">${escapeCtx(p.tipo)}</div><p class="ctx-body">${escapeCtx(p.resumen)}</p>
-    ${metr}${cron}
-    <div class="ctx-warning"><b>Precisión cartográfica:</b> ${escapeCtx(p.precaucion)}
-      <div style="margin-top:6px">Referencia actual: ${escapeCtx(s.variante || 'coordenada libre')} · ${Number(s.lat).toFixed(5)}, ${Number(s.lon).toFixed(5)}.</div>
-    </div>
-    ${idxAlterno>=0?`<button type="button" class="ctx-variant" id="alternarPunto">Ver otra coordenada candidata del mismo lugar</button>`:''}
-    ${fuentes}<p class="ctx-note">La ficha documenta el asentamiento o barrio en su conjunto: el círculo de ${Math.round(RADIO)} m es solo un recorte visual, no sus límites. Las alturas y texturas 3D pueden ser aproximadas.</p>`;
-  const geo=document.createElement('div');
-  geo.className='ctx-warning';
-  geo.style.background='#eef7fb';
-  geo.style.borderLeftColor='#1d8ba8';
-  geo.innerHTML='<b>Revisión de coordenadas (consolidado v4):</b> '+escapeCtx(s.revision||'Sin cambio')+
-    '<div style="margin-top:5px">'+escapeCtx(s.verificacion2026||'Sin actualización verificable')+'</div>'+
-    '<div style="font-size:10px;margin-top:7px;color:#506677">Fuente de cruce: '+escapeCtx(s.fuente2026||'Consolidado v4')+'</div>';
-  contexto.appendChild(geo);
+  if (!p) {
+    contexto.innerHTML = `<h2>${escapeCtx(s.nombre)}</h2>`;
+    return;
+  }
+  const metr = p.cifras.length
+    ? `<div class="ctx-h">Datos del asentamiento</div><div class="ctx-metrics">${p.cifras.map(([val,lab])=>`<div class="ctx-metric"><strong>${escapeCtx(val)}</strong><span>${escapeCtx(lab)}</span></div>`).join('')}</div>`
+    : '';
+  const cron = p.hitos.length
+    ? `<div class="ctx-h">Antecedentes e hitos</div><ol class="ctx-timeline">${p.hitos.map(([when,what])=>`<li><b>${escapeCtx(when)}</b>${escapeCtx(what)}</li>`).join('')}</ol>`
+    : '';
+  const fuentes = p.fuentes.length
+    ? `<div class="ctx-h">Fuentes</div><ul class="ctx-sources">${p.fuentes.map(([tit,url])=>`<li><a href="${escapeCtx(url)}" target="_blank" rel="noopener noreferrer">${escapeCtx(tit)}</a></li>`).join('')}</ul>`
+    : '';
+  contexto.innerHTML = `<div class="ctx-tag">Información del asentamiento</div><h2>${escapeCtx(s.nombre)}</h2>
+    <div class="ctx-tag">${escapeCtx(p.tipo)}</div>
+    <p class="ctx-body">${escapeCtx(p.resumen)}</p>
+    ${metr}${cron}${fuentes}`;
   contexto.scrollTop = 0;
-  const alt = document.getElementById('alternarPunto');
-  if(alt) alt.addEventListener('click',()=>seleccionar(idxAlterno));
 }
 
 /* ---------- Panel ---------- */
@@ -925,7 +1035,7 @@ const $ = id => document.getElementById(id);
 
 function actualizarPanel(s) {
   $('titulo').textContent = s.nombre;
-  $('sub').textContent = [s.municipio, s.departamento].filter(Boolean).join(', ') + (s.variante ? ' · ' + s.variante : '');
+  $('sub').textContent = [s.municipio, s.departamento].filter(Boolean).join(', ');
   $('coords').textContent = s.lat.toFixed(5) + ', ' + s.lon.toFixed(5);
   const chips = $('chips'); chips.replaceChildren();
   const chip = (txt, cls) => { const e = document.createElement('span'); e.className = 'chip ' + cls; e.textContent = txt; chips.appendChild(e); };
@@ -1001,7 +1111,7 @@ function marcarActiva() {
 function seleccionar(i) {
   if (i === actual) return;
   actual = i; sitioIdx = i;
-  const u = new URL(location.href); u.searchParams.set('sitio', i + 1); u.searchParams.delete('lat'); u.searchParams.delete('lon');
+  const u = new URL(location.href); u.searchParams.set('sitio', SITIOS[i].originalIndex); u.searchParams.delete('lat'); u.searchParams.delete('lon');
   try { history.replaceState(null, '', u); } catch (e) {}
   marcarActiva();
   cargar(SITIOS[i]);
@@ -1046,7 +1156,7 @@ $('btnVista').addEventListener('click', vistaInicial);
 $('btnRotar').addEventListener('click', () => { controls.autoRotate = !controls.autoRotate; actualizarBotonRotar(); });
 $('btnCopiar').addEventListener('click', async () => {
   const u = new URL(location.href.split('?')[0]);
-  if (actual >= 0) u.searchParams.set('sitio', actual + 1);
+  if (actual >= 0) u.searchParams.set('sitio', SITIOS[actual].originalIndex);
   else { u.searchParams.set('lat', sitioLibre.lat); u.searchParams.set('lon', sitioLibre.lon); }
   if (RADIO !== 500) u.searchParams.set('r', RADIO);
   if (exag !== 1.5) u.searchParams.set('exag', exag);
@@ -1059,34 +1169,22 @@ $('btnCopiar').addEventListener('click', async () => {
 });
 actualizarBotonRotar();
 
-/* Alinea las imágenes históricas debajo de la navegación visible.
-   Si StoryMaps usa ui=galeria y oculta la navegación lateral, se colocan
-   debajo del título en el margen izquierdo. */
+/* Línea de tiempo horizontal situada sobre la galería sin cubrirla. */
 function posicionarTiempo() {
-  const t = document.getElementById('tiempo');
-  if (!t) return;
-  if (window.innerWidth <= 640) {
-    t.style.removeProperty('top');
-    t.style.removeProperty('max-height');
-    return;
-  }
-  const nav = document.getElementById('panel');
-  const header = document.getElementById('cabecera');
-  const gal = document.getElementById('galeria');
-  const visible = el => el && getComputedStyle(el).display !== 'none' && el.getBoundingClientRect().height > 0;
-  const top = visible(nav)
-    ? Math.ceil(nav.getBoundingClientRect().bottom + 10)
-    : Math.max(110, Math.ceil((visible(header) ? header.getBoundingClientRect().bottom : 98) + 12));
-  const bottom = visible(gal) ? gal.getBoundingClientRect().top : window.innerHeight - 25;
-  t.style.top = top + 'px';
-  t.style.maxHeight = Math.max(70, Math.floor(bottom - top - 12)) + 'px';
+  const linea = document.getElementById('tiempo');
+  const galeria = document.getElementById('galeria');
+  if (!linea) return;
+  const visible = galeria && getComputedStyle(galeria).display !== 'none';
+  const limite = visible ? galeria.getBoundingClientRect().top : window.innerHeight;
+  linea.style.removeProperty('top');
+  linea.style.removeProperty('max-height');
+  linea.style.bottom = Math.max(12, Math.round(window.innerHeight - limite + 12)) + 'px';
 }
 window.addEventListener('resize', posicionarTiempo);
 if (typeof ResizeObserver !== 'undefined') {
   const observer = new ResizeObserver(posicionarTiempo);
-  observer.observe(document.getElementById('panel'));
-  observer.observe(document.getElementById('cabecera'));
   observer.observe(document.getElementById('galeria'));
+  observer.observe(document.getElementById('cabecera'));
 }
 posicionarTiempo();
 
@@ -1148,6 +1246,7 @@ async function prepararTiempo(sitio, mio) {
   btnActual.title='Imagen satelital actual';anios.appendChild(btnActual);
   $('notaTiempo').textContent='Consultando versiones históricas de Esri…';
   caja.classList.remove('oculto');
+  posicionarTiempo();
   const vers = await Promise.race([
     versionesLocales(sitio.lat,sitio.lon),
     new Promise((_,reject)=>setTimeout(()=>reject(new Error('Consulta histórica agotó el plazo')),12000))
@@ -1169,13 +1268,15 @@ async function prepararTiempo(sitio, mio) {
     opciones.push({ rel: v, inf, actual: opciones.length === 0 });
   });
   opciones.reverse();
-  if (opciones.length < 2) { $('notaTiempo').textContent = 'No hay imágenes históricas distintas verificables para este sitio.'; return; }
+  if (opciones.length < 2) { caja.classList.add('oculto'); return; }
   anios.replaceChildren();
   for (const o of opciones) {
     const b = document.createElement('button');
     b.type = 'button';
-    b.textContent = o.actual ? 'Actual' : (o.inf ? o.inf.fecha.getUTCFullYear() : fechaPub(o.rel).slice(0, 4) + '*');
+    b.textContent = o.actual ? 'Actual' : (o.inf ? o.inf.fecha.getUTCFullYear() : fechaPub(o.rel).slice(0, 4));
+    b.classList.add('timeline-step');
     b.title = o.inf ? 'Capturada ' + fmtFecha(o.inf.fecha) + (o.inf.fuente ? ' (' + o.inf.fuente + ')' : '') : 'Fecha de captura no disponible; versión publicada ' + fechaPub(o.rel);
+    b.setAttribute('aria-pressed', 'false');
     b.addEventListener('click', () => usarVersion(o, b));
     o.boton = b;
     anios.appendChild(b);
@@ -1183,6 +1284,8 @@ async function prepararTiempo(sitio, mio) {
   const act = opciones[opciones.length - 1];
   modelo.wayback = { actual: true, texto: act.inf ? 'Imagen de ' + fmtFecha(act.inf.fecha) : '' };
   act.boton.classList.add('activo');
+  act.boton.setAttribute('aria-pressed', 'true');
+  posicionarTiempo();
   notaTiempo(act);
   if (modelo.sitio) actualizarMeta(modelo.sitio);
   if (FECHA_INI && !prepararTiempo.usado) {
@@ -1198,16 +1301,20 @@ async function prepararTiempo(sitio, mio) {
 }
 
 function notaTiempo(o) {
-  $('notaTiempo').textContent = o.inf
-    ? 'Capturada ' + fmtFecha(o.inf.fecha) + (o.inf.res ? ` · ${(+o.inf.res).toFixed(1)} m/píxel` : '') + (o.actual ? '' : ' · edificios de 2026 en transparencia')
-    : 'Versión publicada ' + fechaPub(o.rel) + ' (fecha de captura no disponible)';
+  $('notaTiempo').textContent = o.actual ? 'Vista actual' :
+    o.inf ? 'Imagen capturada el ' + fmtFecha(o.inf.fecha) :
+    'Versión publicada en ' + fechaPub(o.rel).slice(0, 4);
 }
 
 let turnoImg = 0;
 async function usarVersion(o, boton) {
   if (!modelo) return;
   const mio = ++turnoImg, sitio = modelo.sitio;
-  [...$('anios').children].forEach(b => b.classList.toggle('activo', b === boton));
+  [...$('anios').children].forEach(b => {
+    const activo = b === boton;
+    b.classList.toggle('activo', activo);
+    b.setAttribute('aria-pressed', String(activo));
+  });
   $('notaTiempo').textContent = 'Descargando imagen…';
   try {
     const url = o.actual
@@ -1275,8 +1382,7 @@ async function cargar(sitio) {
     if (!document.body.classList.contains('sin-tiempo') && UI !== 'none') prepararTiempo(sitio,mio).catch(e=>{
       console.warn('Imágenes históricas no disponibles:',e);
       if(mio===turno){
-        const caja=$('tiempo');caja.classList.remove('oculto');
-        $('notaTiempo').textContent='Archivo histórico temporalmente no disponible. Se mantiene la imagen actual.';
+        $('tiempo').classList.add('oculto');
       }
     });
     vistaInicial();
