@@ -340,6 +340,116 @@ body.contexto-abierto #mini {display:none;}
 #tiempo { box-shadow: 0 2px 13px rgba(7,57,91,.1); }
 #tiempo .anios { min-height: 52px; }
 #tiempo .tit { margin-bottom: 0; }
+/* === StoryMaps 2026: diorama y navegación en dos áreas separadas === */
+:root { --dock-height: 125px; --unhcr: #0072bc; }
+#app {
+  position: fixed;
+  inset: 0 0 var(--dock-height) 0 !important;
+  width: 100%;
+  height: auto !important;
+}
+#dock {
+  position: fixed;
+  inset: auto 0 0;
+  z-index: 25;
+  width: 100%;
+  max-height: min(47dvh, 190px);
+  background: #fff;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border-top: 1px solid #cbdde9;
+  box-shadow: 0 -4px 18px rgba(15,58,89,.08);
+}
+#dock #tiempo {
+  position: relative !important;
+  inset: auto !important;
+  top: auto !important; right: auto !important; bottom: auto !important; left: auto !important;
+  display: block;
+  transform: none !important;
+  flex: 0 0 auto;
+  width: 100% !important;
+  max-width: 100% !important;
+  max-height: none !important;
+  margin: 0 !important;
+  padding: 7px 16px 4px !important;
+  overflow: visible !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: #eef7fc !important;
+  box-shadow: none !important;
+}
+#dock #tiempo.oculto,
+body.sin-tiempo #dock #tiempo,
+body.ui-none #dock #tiempo { display: none !important; }
+#dock #tiempo .tit {
+  font-size: 11px;
+  letter-spacing: .02em;
+  margin: 0;
+  color: #16516f;
+  text-align: center;
+}
+#dock #tiempo .anios {
+  display: flex !important;
+  flex-wrap: nowrap !important;
+  gap: 5px;
+  min-height: 43px;
+  padding: 2px 0 0;
+  overflow-x: auto;
+  justify-content: safe center;
+}
+#dock #tiempo .anios::before { top: 13px; background: #aecfe3; }
+#dock #tiempo .anios button {
+  padding-top: 21px;
+  padding-bottom: 2px;
+  min-width: 61px;
+  font-size: 11px;
+}
+#dock #tiempo .anios button::before { top: 5px; width: 13px; height: 13px; }
+#dock #tiempo .nota {
+  min-height: 0;
+  margin: 0;
+  font-size: 10px;
+}
+#dock #galeria {
+  position: relative !important;
+  inset: auto !important;
+  display: flex;
+  flex: 0 1 auto;
+  min-height: 0;
+  width: 100%;
+  padding: 5px 13px 9px;
+  margin: 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+  background: #fff;
+  box-shadow: none;
+  backdrop-filter: none;
+  border: 0;
+  border-top: 1px solid #d9e6ee;
+  justify-content: safe center;
+}
+body.ui-min #dock #galeria,
+body.ui-none #dock #galeria,
+body.sin-galeria #dock #galeria { display: none !important; }
+#dock .tn { width: 77px; padding: 2px 1px; }
+#dock .tn canvas { width: 53px; height: 53px; margin-bottom: 2px; }
+#dock .tn span { font-size: 10px; line-height: 1.12; }
+#dock .tn small { font-size: 9px; }
+.attr { bottom: calc(var(--dock-height) + 4px); right: 8px; }
+#mini { bottom: calc(var(--dock-height) + 8px); }
+#toast { bottom: calc(var(--dock-height) + 15px); }
+#contexto { max-height: min(440px, calc(100dvh - var(--dock-height) - 165px)); }
+@media(max-width:640px) {
+  #dock { max-height: 49dvh; }
+  #dock #tiempo { padding: 6px 7px 3px !important; }
+  #dock #tiempo .anios { justify-content: flex-start; }
+  #dock #galeria { padding: 4px 8px 7px; }
+  #dock .tn { width: 70px; }
+  #dock .tn canvas { width: 47px; height: 47px; }
+  .attr { display: none; }
+}
+
 </style>
 <script type="importmap">
 { "imports": {
@@ -358,7 +468,7 @@ body.contexto-abierto #mini {display:none;}
   <div class="meta" id="meta"></div><div class="meta" id="fuenteRevision"></div>
 </div>
 
-<div id="galeria" role="list" aria-label="Sitios"></div>
+
 
 <div class="panel" id="panel">
   <div class="coords" id="coords"></div>
@@ -383,11 +493,14 @@ body.contexto-abierto #mini {display:none;}
 <button id="btnContexto" type="button" aria-controls="contexto" aria-expanded="false" aria-label="Abrir información del asentamiento"><span class="ctx-icon" aria-hidden="true">ⓘ</span><span class="ctx-label">Información del asentamiento</span></button>
 <aside id="contexto" hidden aria-label="Ficha informativa contextual del lugar" aria-live="polite"></aside>
 
-<div id="tiempo" class="oculto">
-  <div class="tit">Imágenes satelitales · línea de tiempo</div>
-  <div class="anios" id="anios" role="group" aria-label="Seleccionar imagen histórica"></div>
-  <div class="nota" id="notaTiempo"></div>
-</div>
+<nav id="dock" aria-label="Navegación de asentamientos e imágenes históricas">
+  <div id="tiempo" class="oculto">
+    <div class="tit">Evolución en imágenes satelitales</div>
+    <div class="anios" id="anios" role="group" aria-label="Seleccionar imagen histórica"></div>
+    <div class="nota" id="notaTiempo"></div>
+  </div>
+  <div id="galeria" role="list" aria-label="Explorar asentamientos"></div>
+</nav>
 <div id="mini" aria-hidden="true"></div>
 
 <div id="carga"><div class="caja" id="cargaTxt">Descargando relieve e imagen…</div></div>
@@ -569,11 +682,11 @@ function redimensionar() {
   renderer.setSize(w, h);
   camera.aspect = w / h;
   const vis = el => el && el.offsetParent !== null ? el.getBoundingClientRect() : null;
-  const cab = vis(document.getElementById('cabecera')), gal = vis(document.getElementById('galeria'));
-  const arriba = cab ? cab.bottom : 0;
-  const linea = vis(document.getElementById('tiempo'));
-  const bordeLibre = linea ? Math.min(linea.top, gal ? gal.top : h) : (gal ? gal.top : h);
-  const abajo = Math.max(0, h - bordeLibre + (linea ? 30 : 0));
+  // El área WebGL acaba antes del dock inferior: no es necesario
+  // proyectar la escena debajo de una línea de tiempo flotante.
+  const cab = vis(document.getElementById('cabecera'));
+  const arriba = cab ? Math.min(h * 0.35, cab.bottom) : 0;
+  const abajo = 0;
   const dy = (abajo - arriba) / 2;
   if (Math.abs(dy) > 1) camera.setViewOffset(w, h, 0, dy, w, h); else camera.clearViewOffset();
   camera.updateProjectionMatrix();
@@ -1176,25 +1289,24 @@ $('btnCopiar').addEventListener('click', async () => {
 });
 actualizarBotonRotar();
 
-/* Línea de tiempo horizontal situada sobre la galería sin cubrirla. */
-function posicionarTiempo() {
-  const linea = document.getElementById('tiempo');
-  const galeria = document.getElementById('galeria');
-  if (!linea) return;
-  const visible = galeria && getComputedStyle(galeria).display !== 'none';
-  const limite = visible ? galeria.getBoundingClientRect().top : window.innerHeight;
-  linea.style.removeProperty('top');
-  linea.style.removeProperty('max-height');
-  linea.style.bottom = Math.max(12, Math.round(window.innerHeight - limite + 10)) + 'px';
-  requestAnimationFrame(redimensionar);
+/* Navegación en una banda independiente: jamás cubre el diorama.
+   Ajusta el lienzo 3D cuando aparecen o desaparecen imágenes históricas. */
+function ajustarDock() {
+  const dock = document.getElementById('dock');
+  if (!dock) return;
+  const alto = Math.ceil(dock.getBoundingClientRect().height);
+  document.documentElement.style.setProperty('--dock-height', alto + 'px');
+  requestAnimationFrame(() => {
+    redimensionar();
+    posicionarMini();
+  });
 }
-window.addEventListener('resize', posicionarTiempo);
+window.addEventListener('resize', ajustarDock);
 if (typeof ResizeObserver !== 'undefined') {
-  const observer = new ResizeObserver(posicionarTiempo);
-  observer.observe(document.getElementById('galeria'));
-  observer.observe(document.getElementById('cabecera'));
+  const observer = new ResizeObserver(ajustarDock);
+  observer.observe(document.getElementById('dock'));
 }
-posicionarTiempo();
+ajustarDock();
 
 /* ---------- Imagen histórica (Esri World Imagery Wayback) ---------- */
 let wbCfg = null;
@@ -1254,7 +1366,7 @@ async function prepararTiempo(sitio, mio) {
   btnActual.title='Imagen satelital actual';anios.appendChild(btnActual);
   $('notaTiempo').textContent='Consultando versiones históricas de Esri…';
   caja.classList.remove('oculto');
-  posicionarTiempo();
+  ajustarDock();
   const vers = await Promise.race([
     versionesLocales(sitio.lat,sitio.lon),
     new Promise((_,reject)=>setTimeout(()=>reject(new Error('Consulta histórica agotó el plazo')),12000))
@@ -1276,7 +1388,7 @@ async function prepararTiempo(sitio, mio) {
     opciones.push({ rel: v, inf, actual: opciones.length === 0 });
   });
   opciones.reverse();
-  if (opciones.length < 2) { caja.classList.add('oculto'); redimensionar(); return; }
+  if (opciones.length < 2) { caja.classList.add('oculto'); ajustarDock(); return; }
   anios.replaceChildren();
   for (const o of opciones) {
     const b = document.createElement('button');
@@ -1293,7 +1405,7 @@ async function prepararTiempo(sitio, mio) {
   modelo.wayback = { actual: true, texto: act.inf ? 'Imagen de ' + fmtFecha(act.inf.fecha) : '' };
   act.boton.classList.add('activo');
   act.boton.setAttribute('aria-pressed', 'true');
-  posicionarTiempo();
+  ajustarDock();
   notaTiempo(act);
   if (modelo.sitio) actualizarMeta(modelo.sitio);
   if (FECHA_INI && !prepararTiempo.usado) {
@@ -1391,7 +1503,7 @@ async function cargar(sitio) {
       console.warn('Imágenes históricas no disponibles:',e);
       if(mio===turno){
         $('tiempo').classList.add('oculto');
-        redimensionar();
+        ajustarDock();
       }
     });
     vistaInicial();
