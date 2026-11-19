@@ -1,0 +1,344 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#f5f4ef">
+<meta name="description" content="Atlas interactivo de asentamientos: cortes circulares cartográficos con datos de OpenStreetMap, coordenadas documentadas y controles axonométricos.">
+<title>Asentamientos · Una geografía por capas</title>
+<style>
+:root{--ink:#202923;--muted:#68736d;--sage:#7b9875;--ochre:#bc925c;--blue:#88a9b8;--bg:#f4f3ee;--hair:#dfe2d9;--panel:#ffffff;--gap:102px;--tilt:62deg;--turn:-12deg}
+*{box-sizing:border-box}html,body{min-height:100%;margin:0}body{font-family:Inter,"Avenir Next",system-ui,-apple-system,"Segoe UI",sans-serif;background:var(--bg);color:var(--ink);-webkit-font-smoothing:antialiased}
+button,input,select{font:inherit}button{cursor:pointer}button:focus-visible,input:focus-visible,select:focus-visible,a:focus-visible{outline:3px solid #4d8a90;outline-offset:3px}
+.shell{display:grid;grid-template-columns:340px minmax(0,1fr);min-height:100vh}
+.sidebar{background:rgba(255,255,255,.96);border-right:1px solid var(--hair);box-shadow:8px 0 42px #263b2510;padding:30px 28px 24px;z-index:3;display:flex;flex-direction:column;gap:23px;min-width:0}
+.brand{display:flex;align-items:center;gap:10px;letter-spacing:.16em;text-transform:uppercase;font-size:10px;font-weight:750;color:#657765}
+.brandmark{width:27px;height:27px;display:grid;place-items:center;border:1px solid #b1c1ac;border-radius:50%;font-size:17px}
+h1{font-family:Georgia,"Times New Roman",serif;font-size:38px;line-height:1.05;letter-spacing:-1.5px;font-weight:500;margin:11px 0 12px}h1 em{font-style:italic;color:#778d73}
+.intro{font-size:12.5px;line-height:1.7;color:var(--muted);margin:0}
+.sectionline{border-top:1px solid var(--hair);padding-top:20px}
+.eyebrow{color:#8a948c;letter-spacing:.18em;text-transform:uppercase;font-size:9px;font-weight:780;display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.stat{font-size:9px;letter-spacing:.08em;color:#6a786e}
+.search{width:100%;border:1px solid var(--hair);padding:11px 12px;border-radius:7px;background:#fafbf8;font-size:12px;color:#27392e}
+.filters{display:flex;gap:5px;margin:10px 0 9px}
+.pill{font-size:10px;font-weight:700;padding:7px 9px;background:#f3f4ef;border:1px solid #e7eae3;border-radius:16px;color:#748076}
+.pill.active{background:#25372a;border-color:#25372a;color:white}
+.places{display:grid;gap:5px;max-height:210px;overflow:auto;padding-right:2px}
+.place{width:100%;background:transparent;border:1px solid transparent;border-radius:6px;display:flex;align-items:center;gap:8px;text-align:left;padding:9px 10px;color:#48584d;font-size:11px}
+.place:hover{background:#f6f8f4}.place.active{background:#edf2e8;border-color:#d4dfd0;color:#263c2b;font-weight:720}
+.place .pdot{height:7px;width:7px;flex:0 0 7px;background:#7eaa7c;border-radius:50%}.place.reference .pdot{background:#cda76b}
+.place small{display:block;font-weight:450;color:#89948c;font-size:10px;margin-top:3px}
+.place .name{flex:1;min-width:0}.place .tag{font-size:9px;color:#8c988d}
+.coordinate{font-size:20px;letter-spacing:-.45px;font-weight:550;margin:0 0 8px;font-variant-numeric:tabular-nums}
+.kicker{font-size:11px;line-height:1.6;color:#627064;margin:0}
+.status{display:inline-flex;align-items:center;font-weight:650;font-size:10px;padding:7px 9px;border-radius:6px;background:#e6efe3;color:#3b6745;line-height:1.4;margin-top:10px}
+.status.ref{background:#fff3dd;color:#987343}
+.row-control{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:14px 0 6px;font-size:11px;color:#536158}.row-control output{font-variant-numeric:tabular-nums;font-weight:700;color:#303d31}
+input[type=range]{width:100%;accent-color:#69815f;height:13px;cursor:pointer}
+.toggle{display:flex;align-items:center;gap:9px;margin-top:9px;font-size:11px;color:#526054}
+.toggle input{accent-color:#718a69}
+.source-note{font-size:10px;line-height:1.65;color:#7b897d}
+.source-note a{color:#42796d}
+.main{position:relative;min-width:0;overflow:hidden;padding:26px 30px 34px;background:radial-gradient(ellipse at 57% 46%,#fffdf9 1%,#f5f4ef 60%,#eeefe9 100%)}
+.topbar{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;padding:0 12px}
+.topbar strong{display:block;font-size:17px;font-weight:640;letter-spacing:-.4px}.topbar .sub{font-size:11px;color:#8b978f;line-height:1.6;margin-top:4px}
+.buttons{display:flex;gap:7px;flex-wrap:wrap;justify-content:flex-end}
+.btn{display:inline-flex;align-items:center;gap:7px;justify-content:center;border:1px solid #d9ded5;background:#fffdf9;border-radius:6px;padding:9px 12px;font-weight:650;color:#546357;font-size:10px}
+.btn:hover{border-color:#9aac93;background:#f9faf7}.btn.primary{background:#2a4434;border-color:#2a4434;color:white}
+.stage{position:relative;max-width:1120px;min-height:800px;margin:0 auto;perspective:1250px;isolation:isolate}
+.stage-grid{position:absolute;inset:0;pointer-events:none;background:linear-gradient(90deg,transparent 49.9%,#e4e7df55 50%,transparent 50.1%);opacity:.6}
+.stage-grid:before{content:"";position:absolute;width:630px;height:630px;left:45%;top:50%;transform:translate(-50%,-50%);border:1px dashed #e3e6dd;border-radius:50%;opacity:.48}
+.plate{position:absolute;left:45%;width:530px;height:530px;margin-left:-265px;transform:rotateX(var(--tilt)) rotateZ(var(--turn));transform-origin:center;filter:drop-shadow(0 16px 8px #2330210c);will-change:transform}
+.plate svg{width:100%;height:100%;overflow:visible;display:block}
+.plate-shadow{position:absolute;inset:8px;border-radius:50%;border:1px solid #bec9be;pointer-events:none;box-shadow:inset 0 0 0 1px #ffffffad,0 8px 18px #263c2511}
+.plate.novis{opacity:.13;filter:grayscale(1)}
+.plate-label{position:absolute;left:calc(45% + 280px);width:190px;display:flex;align-items:center;gap:9px;pointer-events:none}
+.plate-label .dash{width:49px;border-top:1px dashed #bbc4ba;margin-left:-30px}
+.plate-label .label-body{display:flex;flex-direction:column;gap:4px}
+.plate-label b{font-size:11px;color:#576256;font-weight:700}.plate-label span{font-size:9px;color:#a2aba1}
+.legendbar{display:flex;gap:19px;justify-content:center;align-items:center;flex-wrap:wrap;font-size:10px;color:#768478;padding:0 10px;margin-top:-5px}
+.legendbar i{display:inline-block;width:8px;height:8px;margin-right:6px;border-radius:2px;vertical-align:middle}
+.feedback{position:absolute;left:50%;bottom:13px;transform:translateX(-50%);background:#ffffffd9;border:1px solid #e0e7de;padding:10px 15px;border-radius:7px;max-width:min(90%,580px);min-width:210px;text-align:center;font-size:10px;line-height:1.5;color:#66746a;box-shadow:0 5px 15px #182e1809}
+.page-foot{text-align:center;font-size:9px;line-height:1.6;color:#8c998d;margin-top:10px}
+#info-box{font-size:11px;line-height:1.6;color:#778476}
+#info-box b{color:#435347}
+iframe{border:0}
+@media(max-width:1000px){.shell{grid-template-columns:295px minmax(0,1fr)}.sidebar{padding:23px 18px}.main{padding:19px 10px}.stage{transform:scale(.87);transform-origin:center top;margin-bottom:-100px}.plate-label{left:calc(45% + 270px)}}
+@media(max-width:730px){.shell{display:block}.sidebar{padding:20px 20px 13px;gap:14px}.brand+h1{margin-top:10px}.sidebar h1{font-size:31px}.places{max-height:145px}.sectionline{padding-top:12px}.main{padding:16px 0 28px}.topbar{padding:0 18px}.topbar strong{font-size:15px}.stage{height:705px;min-height:705px;transform:none;margin-bottom:0;overflow:hidden}.stage-grid:before{width:430px;height:430px}.plate{width:min(92vw,480px);height:min(92vw,480px);margin-left:calc(-1 * min(46vw,240px));left:47%}.plate-label{left:auto;right:6px;width:116px;gap:3px}.plate-label .dash{width:20px;margin-left:0}.plate-label b{font-size:9px}.plate-label span{font-size:8px}.feedback{bottom:2px}.buttons .btn{padding:7px 9px}.intro{max-width:600px}}
+@media(max-width:460px){.plate-label{right:0;width:105px}.plate-label .dash{width:7px}.stage{height:660px;min-height:660px}.topbar{display:block}.buttons{justify-content:flex-start;margin-top:12px}}
+body.embed .sidebar{display:none}body.embed .shell{display:block}body.embed .main{padding:15px 6px 0}body.embed .stage{min-height:710px}body.embed .feedback{bottom:7px}
+</style>
+</head>
+<body>
+<div class="shell">
+<aside class="sidebar">
+ <div>
+  <div class="brand"><div class="brandmark">◈</div> Atlas de asentamientos · 2026</div>
+  <h1>Un territorio,<br><em>capa por capa.</em></h1>
+  <p class="intro">Explora sitios de Colombia mediante cortes cartográficos circulares, separando edificaciones, vías, agua y vegetación.</p>
+ </div>
+ <section class="sectionline">
+   <div class="eyebrow">01 / Ubicación <span class="stat" id="count"></span></div>
+   <input id="search" class="search" type="search" placeholder="Buscar asentamiento o municipio…" aria-label="Buscar asentamiento">
+   <div class="filters">
+    <button class="pill active" data-filter="all">Todos</button>
+    <button class="pill" data-filter="verified">Corroborados</button>
+    <button class="pill" data-filter="reference">Referenciales</button>
+   </div>
+   <div id="places" class="places" aria-label="Asentamientos"></div>
+ </section>
+ <section class="sectionline">
+  <div class="eyebrow">02 / Sitio seleccionado</div>
+  <div id="location-title" style="font-weight:650;font-size:13px;margin-bottom:5px"></div>
+  <div id="coordinate" class="coordinate"></div>
+  <p class="kicker" id="location-subtitle"></p>
+  <span id="location-status" class="status"></span>
+  <p class="source-note" id="location-note"></p>
+  <a id="osm-link" target="_blank" rel="noopener" style="font-size:10px;color:#42796d" href="#">Abrir ubicación en OpenStreetMap ↗</a>
+ </section>
+ <section class="sectionline">
+  <div class="eyebrow">03 / Capas visibles</div>
+  <label class="toggle"><input type="checkbox" data-layer="buildings" checked> <span style="color:#283630">■</span> Edificaciones</label>
+  <label class="toggle"><input type="checkbox" data-layer="transport" checked> <span style="color:#bf9157">■</span> Vías y transporte</label>
+  <label class="toggle"><input type="checkbox" data-layer="water" checked> <span style="color:#86aaba">■</span> Agua</label>
+  <label class="toggle"><input type="checkbox" data-layer="green" checked> <span style="color:#8aab80">■</span> Vegetación</label>
+  <label class="toggle"><input type="checkbox" data-layer="base" checked> <span style="color:#bac0a8">■</span> Mapa base combinado</label>
+  <label class="toggle"><input id="raster" type="checkbox" checked> Base cartográfica OSM en la placa inferior</label>
+ </section>
+ <section class="sectionline">
+  <div class="eyebrow">04 / Diagrama</div>
+  <div class="row-control"><label for="radius">Radio del estudio</label><output id="radius-val">500 m</output></div>
+  <input id="radius" type="range" min="250" max="1250" step="250" value="500">
+  <div class="row-control"><label for="gap">Separación entre capas</label><output id="gap-val">100</output></div>
+  <input id="gap" type="range" min="70" max="150" step="10" value="100">
+  <div class="row-control"><label for="tilt">Inclinación</label><output id="tilt-val">62°</output></div>
+  <input id="tilt" type="range" min="45" max="78" step="1" value="62">
+  <div class="row-control"><label for="spin">Rotación</label><output id="spin-val">-12°</output></div>
+  <input id="spin" type="range" min="-90" max="90" step="2" value="-12">
+ </section>
+ <section class="sectionline">
+   <div class="eyebrow">05 / Fuentes y limitaciones</div>
+   <p class="source-note">Centros: <a href="../diorama-casos-verificados-2026/datos.json" target="_blank">Consolidado geocodificado v4</a> y <a href="../diorama-asentamientos/revision_coordenadas_v4.json" target="_blank">revisión de coordenadas</a> (noviembre de 2026). Geometrías visibles: © colaboradores de <a href="https://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a>, consultadas por Overpass. No representan límites oficiales, predios ni una verificación de edificios. Un punto corroborado tampoco determina el perímetro de un asentamiento.</p>
+ </section>
+</aside>
+<main class="main">
+ <header class="topbar">
+  <div><div class="brand" style="margin-bottom:6px">Cortes axonométricos <span style="font-size:9px;color:#a2aea4">/ Colombia</span></div><strong id="headline">Asentamiento · vista descompuesta</strong><div class="sub" id="headline-sub">Geometrías OpenStreetMap · EPSG:4326 · Escala local</div></div>
+  <div class="buttons">
+   <button id="reset" class="btn">↺ Restablecer</button>
+   <button id="reload" class="btn">↻ Recargar datos</button>
+   <button id="export" class="btn primary">↓ Exportar SVG</button>
+  </div>
+ </header>
+ <div id="stage" class="stage"><div class="stage-grid"></div><div id="discs"></div><div class="feedback" id="feedback" role="status">Preparando datos geográficos…</div></div>
+ <div class="legendbar">
+   <span><i style="background:#29362d"></i>Edificaciones</span>
+   <span><i style="background:#bd925b"></i>Vías</span>
+   <span><i style="background:#8bafbd"></i>Agua</span>
+   <span><i style="background:#8cae81"></i>Vegetación</span>
+  </div>
+ <p class="page-foot">Atribución cartográfica: © OpenStreetMap contributors · Los datos están sujetos a completitud y disponibilidad de Overpass · Diseño original inspirado en el concepto de cortes circulares de LandSpace Architecture.</p>
+</main>
+</div>
+<script>
+'use strict';
+const SOURCE={"verified":[{"id":7,"nombre":"El Portal","municipio":"Samaniego","departamento":"Nariño","lat":1.303970445,"lon":-77.610647727,"eje":"Vivienda","modalidad":"Legalización","estado":"Activo","familias":66,"personas":261,"periodo":"2024 - 2025","etapa":"Inicio etapa previa","limite":true,"variante":"Coincidencia cartográfica","tipo":"Caso con punto corroborado","qa":"Confirmada","apto":"Sí","obs":"Punto próximo al límite municipal. La referencia no delimita el asentamiento ni un predio."},{"id":10,"nombre":"Obrero 1","municipio":"Tumaco","departamento":"Nariño","lat":1.786746,"lon":-78.79457,"eje":"Vivienda","modalidad":"Legalización","estado":"Activo","familias":278,"personas":1112,"periodo":"2025","etapa":"Etapa Previa","limite":false,"variante":"Coincidencia cartográfica","tipo":"Caso con punto corroborado","qa":"Confirmada","apto":"Sí","obs":"La ubicación aparece como «Confirmada» en el consolidado, mediante correspondencia cartográfica dentro de 500 m. No delimita el asentamiento ni verifica edificaciones."},{"id":15,"nombre":"Pescadores 1","municipio":"Turbo","departamento":"Antioquia","lat":8.091728,"lon":-76.7384973,"eje":"Vivienda","modalidad":"Legalización","estado":"Culminado","familias":null,"personas":null,"periodo":"2017-2024","etapa":null,"limite":false,"variante":"Coincidencia cartográfica","tipo":"Caso con punto corroborado","qa":"Confirmada","apto":"Sí","obs":"La ubicación aparece como «Confirmada» en el consolidado, mediante correspondencia cartográfica dentro de 500 m. No delimita el asentamiento ni verifica edificaciones."},{"id":18,"nombre":"Corregimiento El Caracol","municipio":"Arauca","departamento":"Arauca","lat":6.9354156,"lon":-70.2688654,"eje":"Tierras - Campesino","modalidad":"Restitución / saneamiento / formalización territorial","estado":"Culminado","familias":null,"personas":null,"periodo":"2018 - 2024","etapa":"Fraccionado","limite":false,"variante":"Coincidencia cartográfica","tipo":"Caso con punto corroborado","qa":"Confirmada","apto":"Sí","obs":"La ubicación aparece como «Confirmada» en el consolidado, mediante correspondencia cartográfica dentro de 500 m. No delimita el asentamiento ni verifica edificaciones."},{"id":30,"nombre":"Los Aceites","municipio":"Tame","departamento":"Arauca","lat":6.4071944,"lon":-71.6038961,"eje":"Tierras - Campesino","modalidad":"Restitución / saneamiento / formalización territorial","estado":"Cerrado","familias":null,"personas":null,"periodo":"2015 - 2019","etapa":"Trasferido","limite":false,"variante":"Coincidencia cartográfica","tipo":"Caso con punto corroborado","qa":"Confirmada","apto":"Sí","obs":"La ubicación aparece como «Confirmada» en el consolidado, mediante correspondencia cartográfica dentro de 500 m. No delimita el asentamiento ni verifica edificaciones."},{"id":34,"nombre":"La Emperatriz","municipio":"El Carmen De Bolivar","departamento":"Bolivar","lat":9.6514321,"lon":-75.0956611,"eje":"Tierras - Campesino","modalidad":"Restitución / saneamiento / formalización territorial","estado":"Culminado","familias":null,"personas":null,"periodo":"2014 - 2018","etapa":"Remitido","limite":false,"variante":"Coincidencia cartográfica","tipo":"Caso con punto corroborado","qa":"Confirmada","apto":"Sí","obs":"La ubicación aparece como «Confirmada» en el consolidado, mediante correspondencia cartográfica dentro de 500 m. No delimita el asentamiento ni verifica edificaciones."},{"id":39,"nombre":"Nueva Esperanza","municipio":"Florencia","departamento":"Caquetá","lat":1.597862,"lon":-75.5986174,"eje":"Vivienda","modalidad":"Legalización","estado":"Cerrado","familias":null,"personas":null,"periodo":"2017","etapa":"Riesgo","limite":false,"variante":"Coincidencia cartográfica","tipo":"Caso con punto corroborado","qa":"Confirmada","apto":"Sí","obs":"La ubicación aparece como «Confirmada» en el consolidado, mediante correspondencia cartográfica dentro de 500 m. No delimita el asentamiento ni verifica edificaciones."},{"id":50,"nombre":"La Victoria","municipio":"Quibdó","departamento":"Chocó","lat":5.71669,"lon":-76.6480868,"eje":"Vivienda","modalidad":"Legalización y titulación","estado":"Activo","familias":null,"personas":null,"periodo":"2019","etapa":"Titulación","limite":false,"variante":"Coincidencia cartográfica","tipo":"Caso con punto corroborado","qa":"Confirmada","apto":"Sí","obs":"La ubicación aparece como «Confirmada» en el consolidado, mediante correspondencia cartográfica dentro de 500 m. No delimita el asentamiento ni verifica edificaciones."},{"id":51,"nombre":"Samper","municipio":"Quibdó","departamento":"Chocó","lat":5.7116298,"lon":-76.6504686,"eje":"Vivienda","modalidad":"Diagnóstico / estudios","estado":"Activo","familias":720,"personas":3600,"periodo":"2025","etapa":"Diagnostico","limite":false,"variante":"Coincidencia cartográfica","tipo":"Caso con punto corroborado","qa":"Confirmada","apto":"Sí","obs":"La ubicación aparece como «Confirmada» en el consolidado, mediante correspondencia cartográfica dentro de 500 m. No delimita el asentamiento ni verifica edificaciones."},{"id":64,"nombre":"La Pista","municipio":"Maicao","departamento":"La Guajira","lat":11.389430295,"lon":-72.242948822,"eje":"Vivienda","modalidad":"Otros procesos / protección / gestión","estado":"Activo","familias":2287,"personas":9150,"periodo":null,"etapa":null,"limite":false,"variante":"Coincidencia cartográfica","tipo":"Caso con punto corroborado","qa":"Confirmada","apto":"Sí","obs":"La ubicación aparece como «Confirmada» en el consolidado, mediante correspondencia cartográfica dentro de 500 m. No delimita el asentamiento ni verifica edificaciones."},{"id":81,"nombre":"Topacio","municipio":"Villavicencio","departamento":"Meta","lat":4.1523844,"lon":-73.607138,"eje":"Vivienda","modalidad":"Legalización","estado":"Culminado","familias":null,"personas":null,"periodo":"2016- 2017","etapa":"Legalizado Res. 272 del 2017","limite":false,"variante":"Coincidencia cartográfica","tipo":"Caso con punto corroborado","qa":"Confirmada","apto":"Sí","obs":"La ubicación aparece como «Confirmada» en el consolidado, mediante correspondencia cartográfica dentro de 500 m. No delimita el asentamiento ni verifica edificaciones."},{"id":83,"nombre":"Villa Juliana","municipio":"Villavicencio","departamento":"Meta","lat":4.0683037,"lon":-73.667109,"eje":"Vivienda","modalidad":"Legalización","estado":"Culminado","familias":null,"personas":null,"periodo":"2016- 2017","etapa":"Resolución","limite":false,"variante":"Coincidencia cartográfica","tipo":"Caso con punto corroborado","qa":"Confirmada","apto":"Sí","obs":"La ubicación aparece como «Confirmada» en el consolidado, mediante correspondencia cartográfica dentro de 500 m. No delimita el asentamiento ni verifica edificaciones."},{"id":90,"nombre":"Brisas de Los Andes.","municipio":"Cúcuta","departamento":"Norte De Santander","lat":7.919526466,"lon":-72.537727972,"eje":"Vivienda","modalidad":"Titulación","estado":"Activo","familias":237,"personas":948,"periodo":"2022- 2025","etapa":"SINF","limite":false,"variante":"Coincidencia cartográfica","tipo":"Caso con punto corroborado","qa":"Confirmada","apto":"Sí","obs":"La ubicación aparece como «Confirmada» en el consolidado, mediante correspondencia cartográfica dentro de 500 m. No delimita el asentamiento ni verifica edificaciones."},{"id":92,"nombre":"Caño Limón","municipio":"Cúcuta","departamento":"Norte De Santander","lat":7.947734856,"lon":-72.519141269,"eje":"Vivienda","modalidad":"Legalización","estado":"Activo","familias":994,"personas":3976,"periodo":"2024 - 2025","etapa":"SINF","limite":false,"variante":"Coincidencia cartográfica","tipo":"Caso con punto corroborado","qa":"Confirmada","apto":"Sí","obs":"La ubicación aparece como «Confirmada» en el consolidado, mediante correspondencia cartográfica dentro de 500 m. No delimita el asentamiento ni verifica edificaciones."},{"id":93,"nombre":"Delicias","municipio":"Cúcuta","departamento":"Norte De Santander","lat":7.8708853,"lon":-72.5355271,"eje":"Vivienda","modalidad":"Legalización","estado":"Culminado","familias":null,"personas":null,"periodo":"SINF","etapa":"Legalizado","limite":false,"variante":"Coincidencia cartográfica","tipo":"Caso con punto corroborado","qa":"Confirmada","apto":"Sí","obs":"La ubicación aparece como «Confirmada» en el consolidado, mediante correspondencia cartográfica dentro de 500 m. No delimita el asentamiento ni verifica edificaciones."},{"id":94,"nombre":"Divina Pastora","municipio":"Cúcuta","departamento":"Norte De Santander","lat":7.87539482,"lon":-72.533867612,"eje":"Vivienda","modalidad":"Legalización","estado":"Activo","familias":1474,"personas":5159,"periodo":"2024-2025","etapa":"Estudios Tecnicos","limite":false,"variante":"Coincidencia cartográfica","tipo":"Caso con punto corroborado","qa":"Confirmada","apto":"Sí","obs":"La ubicación aparece como «Confirmada» en el consolidado, mediante correspondencia cartográfica dentro de 500 m. No delimita el asentamiento ni verifica edificaciones."},{"id":96,"nombre":"Manuela Beltrán.","municipio":"Cúcuta","departamento":"Norte De Santander","lat":7.872753505,"lon":-72.539375898,"eje":"Vivienda","modalidad":"Titulación","estado":"Activo","familias":994,"personas":3976,"periodo":"2022- 2025","etapa":"En proceso","limite":false,"variante":"Coincidencia cartográfica","tipo":"Caso con punto corroborado","qa":"Confirmada","apto":"Sí","obs":"La ubicación aparece como «Confirmada» en el consolidado, mediante correspondencia cartográfica dentro de 500 m. No delimita el asentamiento ni verifica edificaciones."},{"id":97,"nombre":"María Gracia","municipio":"Cúcuta","departamento":"Norte De Santander","lat":7.8825954,"lon":-72.5403937,"eje":"Vivienda","modalidad":"Legalización","estado":"Cerrado","familias":null,"personas":null,"periodo":"2018- 2025","etapa":"Riesgo","limite":false,"variante":"Coincidencia cartográfica","tipo":"Caso con punto corroborado","qa":"Confirmada","apto":"Sí","obs":"La ubicación aparece como «Confirmada» en el consolidado, mediante correspondencia cartográfica dentro de 500 m. No delimita el asentamiento ni verifica edificaciones."},{"id":98,"nombre":"Nuevo Horizonte.","municipio":"Cúcuta","departamento":"Norte De Santander","lat":7.895529989,"lon":-72.541136849,"eje":"Vivienda","modalidad":"Legalización","estado":"Activo","familias":1824,"personas":5472,"periodo":"2023- 2025","etapa":"Estudios Tecnicos","limite":false,"variante":"Coincidencia cartográfica","tipo":"Caso con punto corroborado","qa":"Confirmada","apto":"Sí","obs":"La ubicación aparece como «Confirmada» en el consolidado, mediante correspondencia cartográfica dentro de 500 m. No delimita el asentamiento ni verifica edificaciones."},{"id":99,"nombre":"Valles De Jerusalen","municipio":"Cúcuta","departamento":"Norte De Santander","lat":7.885569668,"lon":-72.540248728,"eje":"Vivienda","modalidad":"Legalización","estado":"Activo","familias":293,"personas":879,"periodo":"2023-2025","etapa":"Diseño urbanistico","limite":false,"variante":"Coincidencia cartográfica","tipo":"Caso con punto corroborado","qa":"Confirmada","apto":"Sí","obs":"La ubicación aparece como «Confirmada» en el consolidado, mediante correspondencia cartográfica dentro de 500 m. No delimita el asentamiento ni verifica edificaciones."},{"id":100,"nombre":"Valles Del Rodeo","municipio":"Cúcuta","departamento":"Norte De Santander","lat":7.877117,"lon":-72.5382653,"eje":"Vivienda","modalidad":"Legalización","estado":"Activo","familias":null,"personas":null,"periodo":"2020","etapa":"SINF","limite":false,"variante":"Coincidencia cartográfica","tipo":"Caso con punto corroborado","qa":"Confirmada","apto":"Sí","obs":"La ubicación aparece como «Confirmada» en el consolidado, mediante correspondencia cartográfica dentro de 500 m. No delimita el asentamiento ni verifica edificaciones."},{"id":111,"nombre":"Villa Rosa","municipio":"Mocoa","departamento":"Putumayo","lat":1.1511106,"lon":-76.6637068,"eje":"Vivienda","modalidad":"Legalización","estado":"Cerrado","familias":null,"personas":null,"periodo":"2017 - 2023","etapa":"Falta Voluntad Politica","limite":false,"variante":"Coincidencia cartográfica","tipo":"Caso con punto corroborado","qa":"Confirmada","apto":"Sí","obs":"La ubicación aparece como «Confirmada» en el consolidado, mediante correspondencia cartográfica dentro de 500 m. No delimita el asentamiento ni verifica edificaciones."},{"id":112,"nombre":"Centenario.","municipio":"Puerto Asís","departamento":"Putumayo","lat":0.501362158,"lon":-76.506205975,"eje":"Vivienda","modalidad":"Legalización","estado":"Activo","familias":294,"personas":1176,"periodo":"2021 - 2025","etapa":"Diseño Urbanistico","limite":false,"variante":"Coincidencia cartográfica","tipo":"Caso con punto corroborado","qa":"Confirmada","apto":"Sí","obs":"La ubicación aparece como «Confirmada» en el consolidado, mediante correspondencia cartográfica dentro de 500 m. No delimita el asentamiento ni verifica edificaciones."},{"id":117,"nombre":"Patio Bonito","municipio":"Armenia","departamento":"Quindio","lat":4.5323914,"lon":-75.6672791,"eje":"Vivienda","modalidad":"Diagnóstico / estudios","estado":"Culminado","familias":null,"personas":null,"periodo":"2024","etapa":"Diagnostico","limite":false,"variante":"Coincidencia cartográfica","tipo":"Caso con punto corroborado","qa":"Confirmada","apto":"Sí","obs":"La ubicación aparece como «Confirmada» en el consolidado, mediante correspondencia cartográfica dentro de 500 m. No delimita el asentamiento ni verifica edificaciones."},{"id":119,"nombre":"La Sierpita","municipio":"Majagual","departamento":"Sucre","lat":8.472065357,"lon":-74.865680471,"eje":"Vivienda","modalidad":"Legalización","estado":"Activo","familias":433,"personas":1367,"periodo":"2023 - 2025","etapa":"Caracterización","limite":false,"variante":"Coincidencia cartográfica","tipo":"Caso con punto corroborado","qa":"Confirmada","apto":"Sí","obs":"La ubicación aparece como «Confirmada» en el consolidado, mediante correspondencia cartográfica dentro de 500 m. No delimita el asentamiento ni verifica edificaciones."},{"id":121,"nombre":"Alberto Lleras","municipio":"Buenaventura","departamento":"Valle Del Cauca","lat":3.876355483,"lon":-77.062823673,"eje":"Vivienda","modalidad":"Legalización","estado":"Activo","familias":2700,"personas":10800,"periodo":"2025","etapa":"Levantamiento Topografico","limite":false,"variante":"Coincidencia cartográfica","tipo":"Caso con punto corroborado","qa":"Confirmada","apto":"Sí","obs":"La ubicación aparece como «Confirmada» en el consolidado, mediante correspondencia cartográfica dentro de 500 m. No delimita el asentamiento ni verifica edificaciones."},{"id":124,"nombre":"El Valladito","municipio":"Cali","departamento":"Valle Del Cauca","lat":3.405874837,"lon":-76.494916682,"eje":"Vivienda","modalidad":"Legalización","estado":"Activo","familias":240,"personas":960,"periodo":"2023 - 2025","etapa":"Levantamiento Topografico","limite":false,"variante":"Coincidencia cartográfica","tipo":"Caso con punto corroborado","qa":"Confirmada","apto":"Sí","obs":"La ubicación aparece como «Confirmada» en el consolidado, mediante correspondencia cartográfica dentro de 500 m. No delimita el asentamiento ni verifica edificaciones."},{"id":125,"nombre":"Villa Mercedes","municipio":"Cali","departamento":"Valle Del Cauca","lat":3.408642,"lon":-76.477177,"eje":"Vivienda","modalidad":"Legalización","estado":"Activo","familias":270,"personas":1080,"periodo":"En propuesta","etapa":"En propuesta","limite":false,"variante":"Coincidencia cartográfica","tipo":"Caso con punto corroborado","qa":"Confirmada","apto":"Sí","obs":"La ubicación aparece como «Confirmada» en el consolidado, mediante correspondencia cartográfica dentro de 500 m. No delimita el asentamiento ni verifica edificaciones."}],"referential":[{"nombre":"Granizal","municipio":"Bello","departamento":"Antioquia","variante":"Punto original · sin actualización validada","lat":6.30317,"lon":-75.53327,"tipo":"Punto original referencial","qa":"Referencial · sin nueva verificación","apto":"No","obs":"El consolidado contiene dos sectores de Granizal, pero sus candidatos no corroboran el punto general del diorama. Se conserva la referencia inicial y se requiere validación de sector/polígono.","revision":"Sin cambio","verificacion2026":"Granizal Sector El Pinal: punto nuevo con confianza baja, asociado a una farmacia. Sector Manantial: diferencia superior a 3 km frente a la referencia general. No reemplazar el punto de Granizal con ninguno de ellos.","fuente2026":"Consolidado_geocodificado_v4.xlsx, registros Granizal: Sector el Pinal y Granizal: Sector Manantial"},{"nombre":"Resguardo Yanacona Yachay Wasi","municipio":"Mocoa","departamento":"Putumayo","variante":"Consolidado v4 · punto original","lat":1.18029,"lon":-76.63538,"tipo":"Punto original referencial","qa":"No verificable · punto referencial","apto":"No","obs":"Se conserva el punto original. No se ha verificado que corresponda al área o a un predio del resguardo; no confundir con Villa María de Anamú.","revision":"Coincide con coordenada previa","verificacion2026":"El consolidado mantiene 1.180290, -76.635380, clasificado «No verificable (sin ficha en Google)». No delimita el resguardo.","fuente2026":"Consolidado_geocodificado_v4.xlsx, Resguardo Yanacona Yachay Wasi"},{"nombre":"Resguardo Yanacona Villa María de Anamú","municipio":"Mocoa","departamento":"Putumayo","variante":"Referencia anterior · sin nuevo registro","lat":1.19487,"lon":-76.62956,"tipo":"Punto original referencial","qa":"Sin correspondencia en consolidado","apto":"No","obs":"Resguardo distinto de Yachay Wasi. No existe actualización geográfica corroborada en el consolidado; se mantiene punto anterior.","revision":"Sin cambio","verificacion2026":"No se identificó un registro inequívoco para Villa María de Anamú en el consolidado. La coordenada sigue siendo una referencia del sector Anamú, no del perímetro del resguardo.","fuente2026":"Revisión de Consolidado_geocodificado_v4.xlsx, sin registro correspondiente"},{"nombre":"Bajamar: Alberto Lleras Camargo","municipio":"Buenaventura","departamento":"Valle del Cauca","variante":"Consolidado v4 · referencia barrial corroborada","lat":3.87635548288791,"lon":-77.0628236728019,"tipo":"Punto original referencial","qa":"Confirmada · referencia de barrio","apto":"No","obs":"Se actualiza de 3.875090, -77.061420 a 3.876355483, -77.062823673 (≈210 m). Coincidencia barrial cartográfica, sin polígono oficial ni verificación predial.","revision":"Actualizada (≈210 m respecto al punto anterior)","verificacion2026":"«Confirmada» en el consolidado; referencia vinculada al Salón comunal barrio Lleras a ≈30 m del punto. No es un límite o centroide oficial de un asentamiento.","fuente2026":"Consolidado_geocodificado_v4.xlsx, Alberto Lleras (Buenaventura)"},{"nombre":"Bajamar: Punta del Este","municipio":"Buenaventura","departamento":"Valle del Cauca","variante":"Punto OSM original · sin nuevo registro","lat":3.88368,"lon":-77.05282,"tipo":"Punto original referencial","qa":"Referencial · no corroborada en v4","apto":"No","obs":"Barrio de Punta del Este: coordenada referencial de cartografía previa, no levantamiento o delimitación de un asentamiento.","revision":"Sin cambio","verificacion2026":"No se identificó una fila de Punta del Este en el consolidado. Se conserva la referencia previa de barrio cartográfico OSM.","fuente2026":"Revisión de Consolidado_geocodificado_v4.xlsx, sin correspondencia"},{"nombre":"Bajamar: La Playita","municipio":"Buenaventura","departamento":"Valle del Cauca","variante":"Punto OSM original · sin nuevo registro","lat":3.8776,"lon":-77.06669,"tipo":"Punto original referencial","qa":"Referencial · no corroborada en v4","apto":"No","obs":"La Playita: coordenada referencial de barrio, no límite de asentamiento ni ubicación verificada en campo.","revision":"Sin cambio","verificacion2026":"No se identificó una fila de La Playita en el consolidado. Se conserva el punto original de barrio cartográfico OSM.","fuente2026":"Revisión de Consolidado_geocodificado_v4.xlsx, sin correspondencia"},{"nombre":"Cabildo Siona Mame Ñata Umuguse (Nuevo Amanecer)","municipio":"Puerto Asís","departamento":"Putumayo","variante":"Excel anterior · alternativa no verificada","lat":0.48395,"lon":-76.48343,"tipo":"Punto original referencial","qa":"Conflicto de ubicación · alternativa histórica","apto":"No","obs":"La referencia anterior (0.48395, -76.48343) queda a aproximadamente 2,29 km del candidato del consolidado. No se confirma que ninguno sea la ubicación efectiva del cabildo Siona.","revision":"Alternativa antigua conservada","verificacion2026":"El consolidado v4 usa un punto distinto, 0.498792238, -76.497729314, a ≈2,29 km. Este marcador del Excel anterior no está corroborado como ubicación del cabildo.","fuente2026":"Consolidado_geocodificado_v4.xlsx, Nuevo Amanecer; contraste con Excel anterior"},{"nombre":"Cabildo Siona Mame Ñata Umuguse (Nuevo Amanecer)","municipio":"Puerto Asís","departamento":"Putumayo","variante":"Consolidado v4 · coincidencia indirecta","lat":0.498792237649791,"lon":-76.4977293141009,"tipo":"Candidato sin validación de campo","qa":"Coincidencia indirecta · no valida cabildo","apto":"No","obs":"Coordenada del consolidado muy próxima al CSV anterior (≈7 m). La ficha coincidente corresponde a una tienda; se mantiene como candidato NO verificado para el cabildo.","revision":"Ajustada ≈7 m respecto al CSV previo","verificacion2026":"Clasificación «Confirmada (ficha indirecta)», pero la coincidencia es con una TIENDA llamada Nuevo Amanecer, no con el cabildo Siona. No atribuir validación exacta del asentamiento.","fuente2026":"Consolidado_geocodificado_v4.xlsx, Nuevo Amanecer (Puerto Asís)"},{"nombre":"Antiguo Aeropuerto","municipio":"Uribia","departamento":"La Guajira","variante":"Consolidado v4 · candidato Google","lat":11.7135063,"lon":-72.2720548,"tipo":"Candidato sin validación de campo","qa":"Discrepante · candidato cartográfico","apto":"No","obs":"El candidato v4 (11.7135063, -72.2720548) está a ≈21 m del CSV usado en el primer visor. Frente al punto original de Aeropuerto 1 en la base hay ≈1,98 km de discrepancia; verificar límites y sector.","revision":"Ajustada ≈21 m respecto al CSV previo","verificacion2026":"En el consolidado figura como «Aeropuerto 1» y se sustituyó la coordenada original 11.695728, -72.272312 por un candidato etiquetado «Asentamiento Antiguo Aeropuerto» a ≈1,98 km. No está certificado como la localización exacta del sector.","fuente2026":"Consolidado_geocodificado_v4.xlsx, Aeropuerto 1 (Uribia)"},{"nombre":"Antiguo Aeropuerto","municipio":"Uribia","departamento":"La Guajira","variante":"Barrio El Aeropuerto OSM · alternativa","lat":11.69939,"lon":-72.27616,"tipo":"Referencia de barrio, no de todo el asentamiento","qa":"Referencia alternativa · no verificada","apto":"No","obs":"Referencia alternativa cartográfica del barrio El Aeropuerto, no de todo el asentamiento. Difiere ≈1,63 km del candidato v4; conservar únicamente para comparación QA.","revision":"Alternativa anterior conservada","verificacion2026":"El punto del barrio El Aeropuerto OSM está a ≈1,63 km del candidato revisado del consolidado. No es intercambiable con el asentamiento Antiguo Aeropuerto ni constituye validación de Aeropuerto 1.","fuente2026":"OSM en visor original; contraste con Consolidado_geocodificado_v4.xlsx"}],"verifiedCut":"2026-11-09","referenceCut":"2026-11-09"};
+const cases=[
+ ...SOURCE.verified.map((x,i)=>({...x,kind:'verified',uid:'v'+i,site:x.nombre,lat:+x.lat,lon:+x.lon})),
+ ...SOURCE.referential.map((x,i)=>({...x,kind:'reference',uid:'r'+i,site:x.nombre,lat:+x.lat,lon:+x.lon}))
+];
+const names={buildings:'Edificaciones',transport:'Transporte',water:'Agua',green:'Vegetación',base:'Base combinada'};
+const colors={buildings:'#283630',transport:'#bf9259',water:'#91b9c9',green:'#93ad8a',base:'#9aa79b'};
+const order=['buildings','transport','water','green','base'];
+let active=cases.find(x=>x.site.toLowerCase().includes('centenario')&&x.kind==='verified')||cases[0];
+let category='all',radius=500,gap=100,tilt=62,spin=-12;
+let geometry=[],lastKey='',osmStatus='pending',abort=null;
+const cache=new Map();
+const $=id=>document.getElementById(id);
+const escapeHTML=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const srcURI='https://github.com/santiago-rengifo/Projectos';
+const pct=x=>Math.round(x*100)/100;
+function updateList(){
+ const q=$('search').value.trim().toLocaleLowerCase('es');
+ const filtered=cases.filter(x=>(category==='all'||x.kind===category)&&((x.site+' '+x.municipio+' '+x.departamento+' '+(x.variante||'')).toLocaleLowerCase('es').includes(q)));
+ $('count').textContent=filtered.length+' puntos';
+ $('places').innerHTML=filtered.map(x=>'<button class="place '+(x.kind==='reference'?'reference ':'')+(active.uid===x.uid?'active':'')+'" data-id="'+x.uid+'"><i class="pdot"></i><span class="name">'+escapeHTML(x.site)+'<small>'+escapeHTML(x.municipio)+', '+escapeHTML(x.departamento)+(x.kind==='reference'?' · '+escapeHTML(x.variante||'Referencia'):'')+'</small></span></button>').join('')||'<p class="source-note">Sin coincidencias con el filtro.</p>';
+ document.querySelectorAll('.place[data-id]').forEach(b=>b.onclick=()=>selectCase(cases.find(x=>x.uid===b.dataset.id)));
+}
+function selectCase(c){
+ if(!c)return;
+ if(abort)abort.abort();
+ active=c;geometry=[];osmStatus='pending';
+ $('location-title').textContent=c.site;
+ $('coordinate').textContent=c.lat.toFixed(5)+'°, '+c.lon.toFixed(5)+'°';
+ $('location-subtitle').textContent=c.municipio+', '+c.departamento;
+ const status=$('location-status');
+ status.className='status'+(c.kind==='reference'?' ref':'');
+ status.textContent=c.kind==='verified'?'● Punto corroborado cartográficamente':'◆ Punto referencial · No validado en campo';
+ $('location-note').textContent=c.obs||((c.kind==='verified')?'Coincidencia cartográfica; no es una delimitación oficial.':'Coordenada de referencia, no verificación del lugar exacto.');
+ $('osm-link').href='https://www.openstreetmap.org/?mlat='+c.lat+'&mlon='+c.lon+'#map=16/'+c.lat+'/'+c.lon;
+ $('headline').textContent=c.site;
+ $('headline-sub').textContent=c.municipio+' · '+c.departamento+' · Radio '+radius+' m';
+ updateList();render();loadOSM();
+}
+function classify(tags){
+ if(tags.building)return 'buildings';
+ if(tags.highway)return 'transport';
+ if(tags.waterway||tags.natural==='water'||tags.landuse==='reservoir'||tags.water)return 'water';
+ if(['forest','grass','meadow','recreation_ground','village_green','orchard'].includes(tags.landuse)||['park','garden'].includes(tags.leisure)||['wood','scrub','grassland','heath','wetland'].includes(tags.natural))return 'green';
+ return null;
+}
+function project(p){
+ const latR=active.lat*Math.PI/180;
+ const mLon=111320*Math.cos(latR)*(p.lon-active.lon),mLat=111320*(p.lat-active.lat);
+ return [300+mLon*(263/radius),300-mLat*(263/radius)];
+}
+function svgPath(o){
+ const pts=o.geometry||[];
+ if(pts.length<2)return '';
+ let d='';
+ for(let i=0;i<pts.length;i++){
+  const pt=project(pts[i]);
+  if(!Number.isFinite(pt[0])||!Number.isFinite(pt[1]))continue;
+  d+=(i?'L':'M')+pt[0].toFixed(1)+' '+pt[1].toFixed(1)+' ';
+ }
+ if(pts.length>2&&pts[0].lat===pts[pts.length-1].lat&&pts[0].lon===pts[pts.length-1].lon)d+='Z';
+ return d;
+}
+function tiles(){
+ if(!$('raster').checked)return '';
+ const z=radius<=500?15:14, n=Math.pow(2,z), phi=active.lat*Math.PI/180;
+ const cx=(active.lon+180)/360*n*256,cy=(1-Math.asinh(Math.tan(phi))/Math.PI)/2*n*256;
+ const mpp=(2*Math.PI*6378137*Math.cos(phi))/(n*256);
+ const sc=263/radius*mpp, sz=256*sc, ix=Math.floor(cx/256),iy=Math.floor(cy/256);
+ const reach=Math.min(3,Math.ceil((275/sz)+1));
+ let html='';
+ for(let dx=-reach;dx<=reach;dx++)for(let dy=-reach;dy<=reach;dy++){
+  const tx=ix+dx,ty=iy+dy;if(ty<0||ty>=n)continue;
+  const x=300+(tx*256-cx)*sc,y=300+(ty*256-cy)*sc;
+  if(x>590||y>590||x+sz<10||y+sz<10)continue;
+  html+='<image href="https://tile.openstreetmap.org/'+z+'/'+((tx+n)%n)+'/'+ty+'.png" x="'+x.toFixed(2)+'" y="'+y.toFixed(2)+'" width="'+(sz+.4).toFixed(2)+'" height="'+(sz+.4).toFixed(2)+'" preserveAspectRatio="none" opacity=".83"/>';
+ }
+ return html;
+}
+function svgContent(layer,idx,exportMode){
+ const c=colors[layer],base=layer==='base';
+ const bg=base?'#e9ede6':'#fdfefa';
+ const clip='clip-'+idx+(exportMode?'-x':'');
+ let out='<defs><clipPath id="'+clip+'"><circle cx="300" cy="300" r="265"/></clipPath></defs>';
+ out+='<circle cx="300" cy="300" r="266" fill="'+bg+'" stroke="#a8b4a8" stroke-width="1.65"/>';
+ out+='<g clip-path="url(#'+clip+')">';
+ if(base&&!exportMode)out+=tiles();
+ if(!geometry.length){
+  out+='<path d="M300 35V565 M35 300H565" stroke="#a2b0a0" stroke-opacity=".16" stroke-dasharray="6 7"/>';
+  [70,145,215].forEach(r=>out+='<circle cx="300" cy="300" r="'+r+'" fill="none" stroke="#a2b0a0" stroke-opacity=".12" stroke-width="1"/>');
+ }else{
+  const list=base?['green','water','transport','buildings']:[layer];
+  list.forEach(k=>{
+   const selected=geometry.filter(o=>o.cat===k);
+   for(const o of selected){
+    const d=svgPath(o);if(!d)continue;
+    const tags=o.tags||{};
+    let fill='none',stroke=colors[k],sw=1.6,op=1;
+    if(k==='buildings'){fill=base?'#556056':'#26362c';stroke='#fafcf8';sw=.35;op=base?.78:.96;}
+    if(k==='water'){fill=o.isPolygon?'#a2c6d3':'none';stroke='#8eb4c6';sw=o.isPolygon?.8:2.6;op=.92}
+    if(k==='green'){fill=o.isPolygon?'#9cb596':'none';stroke='#8da785';sw=o.isPolygon?.7:1.6;op=.88}
+    if(k==='transport'){sw=['motorway','trunk','primary','secondary'].includes(tags.highway)?3.4:((tags.highway==='footway'||tags.highway==='path')?1:2);op=base?.82:.93}
+    out+='<path d="'+d+'" fill="'+fill+'" stroke="'+stroke+'" stroke-width="'+sw+'" stroke-opacity="'+op+'" fill-opacity="'+op+'" stroke-linejoin="round" stroke-linecap="round"/>';
+   }
+  });
+ }
+ out+='<circle cx="300" cy="300" r="4.2" fill="#b95948" stroke="white" stroke-width="2.1"/>';
+ out+='</g><circle cx="300" cy="300" r="265" fill="none" stroke="#a9b6a9" stroke-width="1.3"/>';
+ out+='<circle cx="300" cy="300" r="254" fill="none" stroke="#d6dfd5" stroke-width=".5" stroke-dasharray="3 9"/>';
+ return out;
+}
+function render(){
+ const stage=$('discs');let content='';
+ const plateWidth=window.innerWidth<=730?Math.min(window.innerWidth*.92,480):530;
+ const scale=plateWidth/530;
+ const g=gap*(window.innerWidth<=730?.78:1);
+ const start=window.innerWidth<=730?75:78;
+ let shown=0;
+ order.forEach((layer,i)=>{
+  const visibility=document.querySelector('[data-layer="'+layer+'"]').checked;
+  if(!visibility)return;
+  const y=start+shown*g;shown++;
+  content+='<div class="plate" style="top:'+y+'px;--tilt:'+tilt+'deg;--turn:'+spin+'deg;z-index:'+(10-i)+'"><svg viewBox="0 0 600 600" xmlns="http://www.w3.org/2000/svg" aria-label="'+names[layer]+'">'+svgContent(layer,i,false)+'</svg><div class="plate-shadow"></div></div>';
+  content+='<div class="plate-label" style="top:'+(y+plateWidth*.29)+'px"><i class="dash"></i><div class="label-body"><b>'+('0'+(i+1))+' · '+names[layer]+'</b><span>'+({buildings:'OpenStreetMap · building',transport:'OpenStreetMap · highway',water:'OpenStreetMap · water',green:'OSM · landuse / natural',base:'Capas superpuestas · OSM'}[layer])+'</span></div></div>';
+ });
+ stage.innerHTML=content;
+ const f=$('feedback');
+ if(osmStatus==='pending')f.textContent='Consultando geometrías reales de OpenStreetMap…';
+ else if(osmStatus==='success'){
+  const counts={};geometry.forEach(x=>counts[x.cat]=(counts[x.cat]||0)+1);
+  f.textContent='OSM · '+geometry.length+' objetos cartográficos: '+(counts.buildings||0)+' edificios, '+(counts.transport||0)+' vías, '+(counts.water||0)+' agua, '+(counts.green||0)+' áreas verdes. El punto rojo marca la coordenada de referencia.';
+ }else if(osmStatus==='empty')f.textContent='No hay geometrías OSM de estas categorías en el radio consultado. Los círculos no representan edificios ni límites.';
+ else f.textContent='Geometrías OSM no disponibles en este momento. La referencia central sigue siendo la original. Selecciona «Recargar datos» para reintentar.';
+ $('headline-sub').textContent=active.municipio+' · '+active.departamento+' · Radio '+radius+' m · '+(osmStatus==='success'?'OSM actualizado':'Fuente de coordenadas: consolidado');
+}
+async function loadOSM(force=false){
+ const key=active.uid+'/'+radius,scope=active;
+ if(cache.has(key)&&!force){geometry=cache.get(key);osmStatus=geometry.length?'success':'empty';render();return}
+ if(abort)abort.abort();abort=new AbortController();
+ osmStatus='pending';geometry=[];render();
+ const r=Math.round(radius*1.15),lat=active.lat,lon=active.lon;
+ const around='(around:'+r+','+lat+','+lon+')';
+ const q='[out:json][timeout:24];(way'+around+'["building"];way'+around+'["highway"];way'+around+'["waterway"];way'+around+'["natural"="water"];way'+around+'["landuse"~"forest|grass|meadow|recreation_ground|village_green|orchard"];way'+around+'["leisure"~"park|garden"];way'+around+'["natural"~"wood|scrub|grassland|heath|wetland"];);out geom;';
+ const endpoints=['https://overpass.kumi.systems/api/interpreter','https://overpass-api.de/api/interpreter','https://overpass.nchc.org.tw/api/interpreter'];
+ for(const url of endpoints){
+  let timeout;
+  try{
+   timeout=setTimeout(()=>abort.abort(),28000);
+   const response=await fetch(url+'?data='+encodeURIComponent(q),{signal:abort.signal,headers:{Accept:'application/json'}});
+   if(!response.ok)throw Error('HTTP '+response.status);
+   const obj=await response.json();
+   const ways=(obj.elements||[]).filter(x=>x.type==='way'&&Array.isArray(x.geometry)&&x.geometry.length>1).slice(0,3000);
+   const out=ways.map(w=>({...w,cat:classify(w.tags||{}),isPolygon:w.geometry.length>2&&w.geometry[0].lat===w.geometry[w.geometry.length-1].lat&&w.geometry[0].lon===w.geometry[w.geometry.length-1].lon})).filter(x=>x.cat);
+   if(active!==scope)return;
+   geometry=out;cache.set(key,geometry);osmStatus=out.length?'success':'empty';render();return;
+  }catch(e){if(active!==scope)return;if(e.name==='AbortError'&&abort.signal.aborted)break;}
+  finally{clearTimeout(timeout);}
+ }
+ if(active===scope){geometry=[];osmStatus='error';render();}
+}
+function reset(){radius=500;gap=100;tilt=62;spin=-12;['radius','gap','tilt','spin'].forEach(id=>$(id).value=({radius,gap,tilt,spin})[id]);labels();document.querySelectorAll('[data-layer]').forEach(c=>c.checked=true);$('raster').checked=true;render();loadOSM();}
+function labels(){for(const [id,v,unit] of [['radius',radius,' m'],['gap',gap,''],['tilt',tilt,'°'],['spin',spin,'°']])$(id+'-val').textContent=v+unit;}
+function exportSVG(){
+ const visible=order.filter(x=>document.querySelector('[data-layer="'+x+'"]').checked);
+ const hh=260+visible.length*140,ww=1040;
+ let s='<svg xmlns="http://www.w3.org/2000/svg" width="'+ww+'" height="'+hh+'" viewBox="0 0 '+ww+' '+hh+'"><rect width="100%" height="100%" fill="#f8f8f4"/>';
+ s+='<text x="58" y="62" font-family="Georgia,serif" font-size="30" fill="#29372c">'+escapeHTML(active.site)+'</text>';
+ s+='<text x="58" y="86" font-family="Arial,sans-serif" font-size="12" fill="#718074">'+escapeHTML(active.municipio+', '+active.departamento)+' · '+radius+' m radio</text>';
+ visible.forEach((layer,i)=>{
+  const yy=175+i*140;
+  s+='<g transform="translate(455 '+yy+') rotate('+spin+') scale(0.94 0.39) translate(-300 -300)"><svg x="0" y="0" width="600" height="600" viewBox="0 0 600 600">'+svgContent(layer,i,true)+'</svg></g>';
+  s+='<path d="M695 '+yy+' H750" stroke="#a6b5a8" stroke-dasharray="4 4"/><text x="760" y="'+(yy+4)+'" font-family="Arial,sans-serif" font-size="15" fill="#566459">'+escapeHTML(names[layer])+'</text>';
+ });
+ s+='<text x="58" y="'+(hh-55)+'" font-family="Arial,sans-serif" font-size="11" fill="#78877c">Punto central: '+active.lat.toFixed(6)+', '+active.lon.toFixed(6)+' · Fuente: Consolidado geocodificado v4 (09/11/2026)</text>';
+ s+='<text x="58" y="'+(hh-36)+'" font-family="Arial,sans-serif" font-size="11" fill="#78877c">© OpenStreetMap contributors · Geometrías OSM de referencia, no límites oficiales de asentamientos.</text></svg>';
+ const blob=new Blob([s],{type:'image/svg+xml;charset=utf-8'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);
+ a.download=('capas-'+active.site.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,'-')+'.svg');a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1500);
+}
+for(const b of document.querySelectorAll('.pill'))b.addEventListener('click',()=>{category=b.dataset.filter;document.querySelectorAll('.pill').forEach(x=>x.classList.toggle('active',x===b));updateList();});
+$('search').addEventListener('input',updateList);
+for(const id of ['radius','gap','tilt','spin'])$(id).addEventListener('input',()=>{
+ const val=+$(id).value;
+ if(id==='radius')radius=val;
+ if(id==='gap')gap=val;
+ if(id==='tilt')tilt=val;
+ if(id==='spin')spin=val;
+ labels();render();
+});
+$('radius').addEventListener('change',()=>loadOSM());
+document.querySelectorAll('[data-layer]').forEach(x=>x.addEventListener('change',render));
+$('raster').addEventListener('change',render);
+$('reset').onclick=reset;
+$('reload').onclick=()=>loadOSM(true);
+$('export').onclick=exportSVG;
+window.addEventListener('resize',render);
+if(new URLSearchParams(location.search).get('embed')==='1')document.body.classList.add('embed');
+labels();selectCase(active);
+</script>
+</body>
+</html>
