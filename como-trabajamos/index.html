@@ -45,7 +45,7 @@
       grid-template-columns:1.08fr 1fr 1fr 1fr;
       grid-template-areas:
         "intro levels partners approach"
-        "intro components since resources";
+        "intro components since since";
       gap:var(--gap);
       align-items:stretch;
     }
@@ -107,7 +107,6 @@
     .approach{grid-area:approach}
     .components{grid-area:components}
     .since{grid-area:since}
-    .resources{grid-area:resources}
 
     .card-head{
       background:linear-gradient(135deg,var(--unhcr-blue) 0%, var(--unhcr-blue-dark) 100%);
@@ -225,10 +224,13 @@
       color:var(--unhcr-blue-dark);
     }
 
-    .legal .summary{
-      font-size:1.08rem;
-      line-height:1.35;
+    .full-text{
+      font-size:1.02rem;
+      line-height:1.5;
+      font-weight:400;
     }
+
+    .full-text strong{font-weight:700}
 
     .note{
       font-size:.88rem;
@@ -245,7 +247,7 @@
           "intro intro"
           "levels partners"
           "approach components"
-          "since resources";
+          "since since";
       }
       .intro{
         display:grid;
@@ -288,7 +290,7 @@
           <h1>Cómo y con quién trabajamos</h1>
         </div>
 
-        <article class="card legal" data-card>
+        <article class="card legal">
           <div class="card-head">
             <div class="topline">
               <div class="icon" aria-hidden="true">
@@ -297,15 +299,11 @@
                   <path d="M13 7v8M22 7v8M31 7v8M8 18h31M14 24h5M23 24h5M32 24h2M14 30h5M23 30h5M32 30h2"/>
                 </svg>
               </div>
-              <button class="toggle" aria-expanded="false" aria-label="Ampliar información">+</button>
             </div>
-            <h2>Legalización de asentamientos y titulación de predios</h2>
+            <h2>Legalización y titulación</h2>
           </div>
           <div class="card-body">
-            <p class="summary">Constitución, ampliación y saneamiento de resguardos, protección y restitución de tierras.</p>
-            <div class="detail">
-              <p>El trabajo combina acciones sobre seguridad jurídica de la tenencia, regularización y fortalecimiento territorial, articulando respuestas según las características de cada comunidad y territorio.</p>
-            </div>
+            <p class="full-text">apoyar la implementación de la política pública de legalización de asentamientos de origen informal, en el marco de la estrategia de revitalización de las ciudades impulsada por el Ministerio de Vivienda.</p>
           </div>
         </article>
       </div>
@@ -336,7 +334,7 @@
         </div>
       </article>
 
-      <article class="card partners" data-card>
+      <article class="card partners">
         <div class="card-head">
           <div class="topline">
             <div class="icon" aria-hidden="true">
@@ -344,15 +342,11 @@
                 <path d="M8 38h31M11 35V22h6v13M21 35V16h6v19M31 35V10h6v25"/>
               </svg>
             </div>
-            <button class="toggle" aria-expanded="false" aria-label="Ampliar información">+</button>
           </div>
           <h2>Trabajamos con</h2>
         </div>
         <div class="card-body">
-          <p class="summary">MinVivienda, Secretarías de Planeación, ANT, CNTI, URT, entre otros.</p>
-          <div class="detail">
-            <p>La articulación institucional permite combinar competencias nacionales y territoriales para responder de manera coordinada a las necesidades del territorio.</p>
-          </div>
+          <p class="full-text"><strong>ACNUR trabaja con institucionales a nivel nacional</strong>, como el Ministerio de Vivienda, para promover la consolidación de la política pública de legalización como un componente fundamental de la estrategia de soluciones duraderas, y la vía para garantizar los derechos de la población desplazada.</p>
         </div>
       </article>
 
@@ -425,25 +419,6 @@
         </div>
       </article>
 
-      <article class="card resources" data-card>
-        <div class="card-head">
-          <div class="topline">
-            <div class="icon" aria-hidden="true">
-              <svg viewBox="0 0 48 48">
-                <path d="M24 40S8 31 8 19c0-6 4-10 9-10 4 0 6 2 7 5 1-3 4-5 7-5 5 0 9 4 9 10 0 12-16 21-16 21z"/>
-              </svg>
-            </div>
-            <button class="toggle" aria-expanded="false" aria-label="Ampliar información">+</button>
-          </div>
-          <h2>Publicaciones y vídeos con MinVivienda</h2>
-        </div>
-        <div class="card-body">
-          <p class="summary">Materiales para profundizar en procesos, resultados y aprendizajes.</p>
-          <div class="detail">
-            <p>Aquí pueden incorporarse enlaces directos a publicaciones, vídeos, documentos técnicos o piezas multimedia relacionadas con el trabajo conjunto.</p>
-          </div>
-        </div>
-      </article>
     </section>
   </main>
 
