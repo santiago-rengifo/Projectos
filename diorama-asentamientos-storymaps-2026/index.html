@@ -689,6 +689,27 @@ body.sin-galeria #dock #galeria { display: none !important; }
   #dock .tn canvas { width: 43px; height: 43px; }
 }
 
+
+/* Nota de precisión geográfica, siempre visible entre el selector temporal
+   y las miniaturas en el modo de exploración. */
+#dock #avisoUbicacion {
+  flex: 0 0 auto;
+  margin: 0;
+  padding: 7px 16px;
+  background: #f5f9fc;
+  border-bottom: 1px solid #d9e6ee;
+  color: #415768;
+  font-size: 11px;
+  line-height: 1.35;
+  text-align: center;
+}
+body.ui-none #avisoUbicacion,
+body.ui-min #avisoUbicacion,
+body.sin-galeria #avisoUbicacion { display: none; }
+@media(max-width:760px) {
+  #dock #avisoUbicacion { padding: 6px 10px; font-size: 10px; }
+}
+
 </style>
 <script type="importmap">
 { "imports": {
@@ -737,6 +758,7 @@ body.sin-galeria #dock #galeria { display: none !important; }
     <div class="anios" id="anios" role="group" aria-label="Seleccionar imagen histórica"></div>
     <div class="nota" id="notaTiempo"></div>
   </div>
+  <p id="avisoUbicacion" role="note">Nota: algunos asentamientos se representan mediante coordenadas aproximadas o puntos de referencia. Estos puntos no delimitan oficialmente los asentamientos ni implican verificación en terreno.</p>
   <div id="galeria" role="list" aria-label="Explorar asentamientos"></div>
 </nav>
 <div id="mini" aria-hidden="true"></div>
@@ -823,6 +845,20 @@ DATOS.forEach((registro, indiceOriginal) => {
     SITIOS.push({ ...registro, etiqueta: registro.nombre, originalIndex: indiceOriginal + 1 });
   }
   mapaOriginal[indiceOriginal] = indicePorLugar.get(clave);
+});
+// Mostrar Mocoa y Puerto Asís al final de la galería, sin alterar DATOS
+// ni las URL históricas basadas en el índice original (?sitio=N).
+const prioridadMunicipio = municipio => {
+  const nombre = normalizarLugar(municipio);
+  return nombre === 'mocoa' ? 1 : nombre === 'puerto asis' ? 2 : 0;
+};
+SITIOS.sort((a, b) => prioridadMunicipio(a.municipio) - prioridadMunicipio(b.municipio));
+const nuevoIndicePorLugar = new Map(SITIOS.map((s, i) =>
+  [normalizarLugar(s.nombre) + '|' + normalizarLugar(s.municipio), i]
+));
+DATOS.forEach((registro, indiceOriginal) => {
+  const clave = normalizarLugar(registro.nombre) + '|' + normalizarLugar(registro.municipio);
+  mapaOriginal[indiceOriginal] = nuevoIndicePorLugar.get(clave);
 });
 
 let sitioIdx = mapaOriginal[clamp(Math.round(num('sitio', 1)) - 1, 0, DATOS.length - 1)] ?? 0;
