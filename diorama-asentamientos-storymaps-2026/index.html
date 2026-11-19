@@ -633,6 +633,62 @@ body.sin-galeria #dock #galeria { display: none !important; }
   #dock #galeria { padding-inline: 8px !important; }
 }
 
+
+/* === Corrección de etiquetas inferiores: StoryMaps / iframes ===
+   La cronología es inflexible y las fichas de asentamientos tienen su
+   propia altura, evitando que flex-shrink oculte nombres y municipios. */
+#dock {
+  max-height: min(77dvh, 340px) !important;
+}
+#dock #galeria {
+  flex: 0 0 auto !important;
+  min-height: 146px;
+  align-items: flex-start;
+  overflow-x: auto;
+  overflow-y: auto;
+  padding: 9px 16px 13px !important;
+  scrollbar-width: thin;
+}
+#dock .tn {
+  flex: 0 0 112px;
+  width: 112px;
+  min-width: 112px;
+  height: auto;
+  padding: 2px 5px 5px;
+}
+#dock .tn span {
+  display: block;
+  -webkit-line-clamp: unset;
+  -webkit-box-orient: initial;
+  overflow: visible;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  font-size: 10.5px;
+  line-height: 1.22;
+  text-align: center;
+}
+#dock .tn small {
+  display: block;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  margin-top: 3px;
+  line-height: 1.2;
+}
+@media (max-width: 760px) {
+  #dock .tn { flex-basis: 104px; width: 104px; min-width: 104px; }
+  #dock #galeria { justify-content: flex-start; }
+}
+@media (max-height: 590px) {
+  #dock { max-height: min(77dvh, 325px) !important; }
+  #dock #galeria { min-height: 136px; }
+  #dock .tn { flex-basis: 106px; width: 106px; min-width: 106px; }
+}
+@media (max-height: 380px) {
+  #dock { max-height: calc(100dvh - 78px) !important; overflow-y: auto; }
+  #dock #galeria { min-height: 0; max-height: 125px; overflow-y: auto; }
+  #dock .tn canvas { width: 43px; height: 43px; }
+}
+
 </style>
 <script type="importmap">
 { "imports": {
