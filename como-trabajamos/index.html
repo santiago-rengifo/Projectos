@@ -224,14 +224,6 @@
       color:var(--unhcr-blue-dark);
     }
 
-    .full-text{
-      font-size:1.02rem;
-      line-height:1.5;
-      font-weight:400;
-    }
-
-    .full-text strong{font-weight:700}
-
     .note{
       font-size:.88rem;
       color:var(--ink-soft);
@@ -290,7 +282,7 @@
           <h1>Cómo y con quién trabajamos</h1>
         </div>
 
-        <article class="card legal">
+        <article class="card legal" data-card>
           <div class="card-head">
             <div class="topline">
               <div class="icon" aria-hidden="true">
@@ -299,11 +291,15 @@
                   <path d="M13 7v8M22 7v8M31 7v8M8 18h31M14 24h5M23 24h5M32 24h2M14 30h5M23 30h5M32 30h2"/>
                 </svg>
               </div>
+              <button class="toggle" aria-expanded="false" aria-label="Ampliar información">+</button>
             </div>
             <h2>Legalización y titulación</h2>
           </div>
           <div class="card-body">
-            <p class="full-text">apoyar la implementación de la política pública de legalización de asentamientos de origen informal, en el marco de la estrategia de revitalización de las ciudades impulsada por el Ministerio de Vivienda.</p>
+            <p class="summary">Legalización de asentamientos de origen informal.</p>
+            <div class="detail">
+              <p>apoyar la implementación de la política pública de legalización de asentamientos de origen informal, en el marco de la estrategia de revitalización de las ciudades impulsada por el Ministerio de Vivienda.</p>
+            </div>
           </div>
         </article>
       </div>
@@ -334,7 +330,7 @@
         </div>
       </article>
 
-      <article class="card partners">
+      <article class="card partners" data-card>
         <div class="card-head">
           <div class="topline">
             <div class="icon" aria-hidden="true">
@@ -342,11 +338,15 @@
                 <path d="M8 38h31M11 35V22h6v13M21 35V16h6v19M31 35V10h6v25"/>
               </svg>
             </div>
+            <button class="toggle" aria-expanded="false" aria-label="Ampliar información">+</button>
           </div>
           <h2>Trabajamos con</h2>
         </div>
         <div class="card-body">
-          <p class="full-text"><strong>ACNUR trabaja con institucionales a nivel nacional</strong>, como el Ministerio de Vivienda, para promover la consolidación de la política pública de legalización como un componente fundamental de la estrategia de soluciones duraderas, y la vía para garantizar los derechos de la población desplazada.</p>
+          <p class="summary">Articulación institucional con entidades nacionales, como el Ministerio de Vivienda.</p>
+          <div class="detail">
+            <p><strong>ACNUR trabaja con institucionales a nivel nacional</strong>, como el Ministerio de Vivienda, para promover la consolidación de la política pública de legalización como un componente fundamental de la estrategia de soluciones duraderas, y la vía para garantizar los derechos de la población desplazada.</p>
+          </div>
         </div>
       </article>
 
