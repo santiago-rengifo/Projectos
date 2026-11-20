@@ -107,6 +107,14 @@ h1 em{color:#6d826e}
  .sidebar{padding:20px}
 }
 @media(max-width:460px){.stage{min-height:680px;height:680px}.plate-label{width:107px}}
+
+/* Keep all five projected plates in view, including on phones. */
+.stage{height:1050px;min-height:1050px}
+@media(max-width:730px){
+ .stage{height:835px;min-height:835px}
+ .plate-label{background:#ffffffdf;border:1px solid #eff0e9;padding:5px 6px;border-radius:4px}
+}
+@media(max-width:460px){.stage{height:815px;min-height:815px}}
 </style>
 </head>
 <body>
@@ -288,7 +296,7 @@ function svgContent(layer,idx,exportMode){
   });
  }
   const drawn=layer==='base'?geometry.length:geometry.filter(x=>x.cat===layer).length;
- if(!base && drawn===0){
+ if(drawn===0){
   const msg=osmStatus==='pending'?'CONSULTANDO OSM':osmStatus==='error'?'OSM NO DISPONIBLE':'SIN OBJETOS CARTOGRAFIADOS';
   out+='<rect x="135" y="267" width="330" height="62" rx="7" fill="#fff" fill-opacity=".91" stroke="#e0e6dd"/>';
   out+='<text x="300" y="289" text-anchor="middle" fill="#61776b" font-family="Arial,sans-serif" font-size="13" letter-spacing="1">'+msg+'</text>';
@@ -313,7 +321,7 @@ function render(){
   content+='<div class="plate" style="top:'+y+'px;--tilt:'+tilt+'deg;--turn:'+spin+'deg;z-index:'+(10-i)+'"><svg viewBox="0 0 600 600" xmlns="http://www.w3.org/2000/svg" aria-label="'+names[layer]+'">'+svgContent(layer,i,false)+'</svg><div class="plate-shadow"></div></div>';
   const layerCount=layer==='base'?geometry.length:geometry.filter(o=>o.cat===layer).length;
   const countLabel=osmStatus==='pending'?'Consultando fuente OSM…':osmStatus==='error'?'Fuente vectorial no disponible':(layerCount?layerCount+' objetos OSM':'Sin geometrías registradas · contexto');
-  content+='<div class="plate-label" style="top:'+(y+plateWidth*.21)+'px"><i class="dash"></i><div class="label-body"><b>'+('0'+(i+1))+' · '+names[layer]+'</b><span>'+countLabel+'</span></div></div>';
+  content+='<div class="plate-label" style="top:'+(y+plateWidth*.50)+'px"><i class="dash"></i><div class="label-body"><b>'+('0'+(i+1))+' · '+names[layer]+'</b><span>'+countLabel+'</span></div></div>';
  });
  stage.innerHTML=content;
  const f=$('feedback');
@@ -354,6 +362,7 @@ function reset(){radius=500;gap=150;tilt=75;spin=2;['radius','gap','tilt','spin'
 function labels(){for(const [id,v,unit] of [['radius',radius,' m'],['gap',gap,''],['tilt',tilt,'°'],['spin',spin,'°']])$(id+'-val').textContent=v+unit;}
 function exportSVG(){
  const visible=order.filter(x=>document.querySelector('[data-layer="'+x+'"]').checked);
+ if(osmStatus==='pending'||osmStatus==='error'){alert('Espera la consulta OSM o pulsa «Recargar datos» antes de exportar. El SVG contiene vectores y no incorpora la imagen satelital.');return;}
  const hh=260+visible.length*140,ww=1040;
  let s='<svg xmlns="http://www.w3.org/2000/svg" width="'+ww+'" height="'+hh+'" viewBox="0 0 '+ww+' '+hh+'"><rect width="100%" height="100%" fill="#f8f8f4"/>';
  s+='<text x="58" y="62" font-family="Georgia,serif" font-size="30" fill="#29372c">'+escapeHTML(active.site)+'</text>';
@@ -364,7 +373,7 @@ function exportSVG(){
   s+='<path d="M695 '+yy+' H750" stroke="#a6b5a8" stroke-dasharray="4 4"/><text x="760" y="'+(yy+4)+'" font-family="Arial,sans-serif" font-size="15" fill="#566459">'+escapeHTML(names[layer])+'</text>';
  });
  s+='<text x="58" y="'+(hh-55)+'" font-family="Arial,sans-serif" font-size="11" fill="#78877c">Punto central: '+active.lat.toFixed(6)+', '+active.lon.toFixed(6)+' · Fuente: Consolidado geocodificado v4 (09/11/2026)</text>';
- s+='<text x="58" y="'+(hh-36)+'" font-family="Arial,sans-serif" font-size="11" fill="#78877c">© OpenStreetMap contributors · Geometrías OSM de referencia, no límites oficiales de asentamientos.</text></svg>';
+ s+='<text x="58" y="'+(hh-36)+'" font-family="Arial,sans-serif" font-size="11" fill="#78877c">© OpenStreetMap contributors · SVG solo vectorial (sin imagen satelital incrustada) · No son límites oficiales.</text></svg>';
  const blob=new Blob([s],{type:'image/svg+xml;charset=utf-8'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);
  a.download=('capas-'+active.site.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,'-')+'.svg');a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1500);
 }
